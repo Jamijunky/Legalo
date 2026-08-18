@@ -1,0 +1,1 @@
+"""Legalo API package."""

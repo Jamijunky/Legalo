@@ -1,0 +1,75 @@
+[
+  {
+    "id": "gold-scholarship-vague",
+    "query": "My scholarship has been pending for four months.",
+    "expect_intent": "rti",
+    "expect_situation_type": "pending_application",
+    "expect_primary_action": "rti",
+    "must_ask_keys_any": ["pending_kind", "scheme_level"],
+    "answers": {
+      "pending_kind": "1) I applied and have heard nothing",
+      "scheme_level": "It is a State scholarship",
+      "state": "Uttar Pradesh",
+      "applicant_name": "Asha Devi",
+      "applicant_address": "Lucknow",
+      "applicant_contact": "asha@example.com"
+    },
+    "must_cite_doc_ids": ["rti-act-2005"],
+    "must_mention": ["state"]
+  },
+  {
+    "id": "gold-scholarship-disbursement",
+    "query": "My scholarship was approved three months ago but the money has not come.",
+    "expect_intent": "rti",
+    "expect_situation_type": "disbursement_failed",
+    "expect_primary_action": "rti",
+    "answers": {
+      "scheme_level": "NSP / central scheme",
+      "state": "Uttar Pradesh",
+      "applicant_name": "Ravi",
+      "applicant_address": "Lucknow",
+      "applicant_contact": "ravi@example.com"
+    },
+    "must_cite_doc_ids": ["rti-act-2005"],
+    "must_mention": ["payment"]
+  },
+  {
+    "id": "gold-eligibility-refuse",
+    "query": "Am I eligible for a scholarship?",
+    "expect_intent": "rti",
+    "expect_situation_type": "eligibility_question",
+    "must_mention": ["does not have a live scheme-eligibility", "unsourced"]
+  },
+  {
+    "id": "gold-rti-ration",
+    "query": "My ration card application has been pending for four months in Prayagraj. I want the status and copies of file notings.",
+    "expect_intent": "rti",
+    "expect_situation_type": "explicit_information_request",
+    "must_cite_doc_ids": ["rti-act-2005"],
+    "must_cite_sections_any": ["6", "7"],
+    "must_not_invent_pio": true
+  },
+  {
+    "id": "gold-consumer-phone",
+    "query": "Shop refused refund for a defective smartphone I bought last month for 18000 rupees.",
+    "expect_intent": "consumer",
+    "expect_situation_type": "defect_refund_refused",
+    "must_cite_doc_ids": ["cpa-2019"],
+    "must_cite_sections_any": ["2(7), 2(9), 2(10), 2(11)", "35"],
+    "must_mention": ["e-jagriti"]
+  },
+  {
+    "id": "gold-tenant-electricity",
+    "query": "My landlord cut the electricity yesterday and says I must leave in two days.",
+    "expect_intent": "tenant",
+    "must_cite_doc_ids": ["model-tenancy-act-2021"],
+    "must_cite_sections_any": ["20", "21"],
+    "must_mention": ["state law may differ"]
+  },
+  {
+    "id": "gold-unknown-medical",
+    "query": "How do I perform heart surgery at home?",
+    "expect_intent": "unsupported",
+    "must_refuse_unsourced": true
+  }
+]

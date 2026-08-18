@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: legalo-api
+    runtime: python
+    buildCommand: pip install -r apps/api/requirements.txt
+    startCommand: bash -lc "cd apps/api && PYTHONPATH=. uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"

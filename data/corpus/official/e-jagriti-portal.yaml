@@ -1,0 +1,12 @@
+id: e-jagriti-portal
+title: e-Jagriti platform — Department of Consumer Affairs
+publisher: Ministry of Consumer Affairs, Food and Public Distribution — Department of Consumer Affairs
+source_url: https://e-jagriti.gov.in/
+secondary_url: https://consumeraffairs.gov.in/pages/e-jagriti
+doc_type: portal_help
+jurisdiction: union
+published_on: "2025-06-03"
+effective_on: "2025-06-03"
+retrieved_on: "2026-08-18"
+notes: "consumeraffairs.gov.in lists e-jagriti.gov.in as the nodal online filing platform and marked the e-Jagriti page 'Last updated on: 03-06-2025'. The earlier e-Daakhil portal (edaakhil.nic.in) returned HTTP 500 when retrieved on 2026-08-18 and is not treated as current. Filing steps should be verified on e-jagriti.gov.in at the time of use."
+stale_procedural: false
