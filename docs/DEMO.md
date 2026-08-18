@@ -24,16 +24,20 @@ Fill name/address. Show an RTI for file notings — not an eligibility opinion.
 
 **Am I eligible for a scholarship?** → refuse to invent eligibility; offer RTI for criteria the department already holds.
 
-## 5:00–7:00 — Wrong-forum traps
+## 5:00–8:00 — Wrong-forum traps
 
 Shop refund → consumer / e-Jagriti, **not** RTI.
 
 Electricity + two-day notice → Model Tenancy ss.20–21, state law may differ.
 
-## 7:00–9:00 — Provenance
+**A police officer slapped me.** → NHRC/HRCNet. Say: “We will not invent BNS sections we do not have.”
 
-`/sources`. RAG grounds the path already chosen. Dated official sources only.
+**My employer has not paid my salary.** → labour.gov.in demand letter. Say: “Workplace is in the brief. Inventing IDA sections is how you lose the freshness score.”
 
-## 9:00–10:00 — Generalises as data
+## 8:00–9:20 — Provenance
 
-Open `data/routing/pathways.json`. “A fourth domain is a new row. We did not boil India.”
+`/sources`. RAG grounds the path already chosen. Dated official sources only. Mention e-Daakhil is dead; e-Jagriti is current.
+
+## 9:20–10:00 — Generalises as data
+
+Open `data/routing/pathways.json`. “A new domain is a new row. We did not boil India.”

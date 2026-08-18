@@ -1,0 +1,117 @@
+{
+  "note": "Data-driven civic pathways. New domains are new rows, not new product code. Legalo v1 only loads the rows below.",
+  "benefits": {
+    "scholarship": {
+      "department_state": "education-state",
+      "department_union": "central-generic",
+      "union_hint": "National Scholarship Portal / central ministry schemes file as Central public authorities on rtionline.gov.in. State scholarships do not."
+    },
+    "ration": {
+      "department_state": "food-civil-supplies-state",
+      "department_union": null,
+      "union_hint": "PDS / ration cards are State Food & Civil Supplies matters. Do not use rtionline.gov.in."
+    },
+    "pension": {
+      "department_state": "education-state",
+      "department_union": "central-generic",
+      "union_hint": "NSAP is Central; many old-age pensions are State. Ask scheme_level."
+    },
+    "pf": {
+      "department_state": null,
+      "department_union": "epfo",
+      "union_hint": "EPFO is a Central public authority. rtionline.gov.in may be used after confirming the office."
+    }
+  },
+  "pathways": {
+    "pending_application": {
+      "domain": "welfare_records",
+      "primary_action": "rti",
+      "secondary_action": "departmental_grievance",
+      "why_en": "The file is silent. An RTI asks where it is, who holds it, and why it is delayed. A grievance asks the office to act without that map. Start with the information request; a grievance can follow once you know the officer.",
+      "why_hi": "फ़ाइल चुप है। आरटीआई पूछता है कि फ़ाइल कहाँ है, किसके पास है, और देरी क्यों है। शिकायत बिना उस नक्शे के कार्रवाई माँगती है। पहले सूचना माँगें।",
+      "not_en": "This is not an eligibility opinion and not a consumer complaint against a private seller.",
+      "corpus": "rti"
+    },
+    "disbursement_failed": {
+      "domain": "welfare_records",
+      "primary_action": "rti",
+      "secondary_action": "departmental_grievance",
+      "why_en": "Approval without payment is a records problem: payment file, PFMS/DBT status, rejection memo. RTI for those records; then a grievance to the paying authority. Do not draft a consumer-forum complaint against the State unless a service-deficiency case is later made out.",
+      "why_hi": "मंज़ूरी के बाद भुगतान न होना अभिलेख की समस्या है — भुगतान फ़ाइल, DBT स्थिति, अस्वीकृति आदेश। पहले आरटीआई।",
+      "not_en": "Not a shop-refund matter. Not an eligibility guess.",
+      "corpus": "rti"
+    },
+    "verification_gap": {
+      "domain": "welfare_records",
+      "primary_action": "rti",
+      "secondary_action": "departmental_grievance",
+      "why_en": "If the office says documents/KYC are pending, ask in writing which document, which date, and which officer. RTI for the deficiency memo; then supply the document or dispute it.",
+      "why_hi": "यदि कार्यालय कहता है दस्तावेज़/KYC बाकी हैं, तो लिखित में पूछें कौन-सा दस्तावेज़, किस तारीख, किस अधिकारी ने।",
+      "not_en": "Do not guess which document is missing.",
+      "corpus": "rti"
+    },
+    "eligibility_question": {
+      "domain": "welfare_records",
+      "primary_action": "rti_for_criteria",
+      "secondary_action": null,
+      "why_en": "Legalo does not have a live scheme-eligibility corpus. Inventing whether you qualify would be unsourced. You may RTI the department for the eligibility criteria, circulars and your application's evaluation note that it already holds.",
+      "why_hi": "लीगैलो के पास योजना पात्रता की लाइव सूची नहीं है। पात्रता गढ़ना अस्रोत होगा। विभाग से मापदंड और आपकी फ़ाइल की मूल्यांकन टिप्पणी आरटीआई से माँगी जा सकती है।",
+      "not_en": "No yes/no eligibility answer without an official circular in the dated corpus.",
+      "corpus": "rti"
+    },
+    "explicit_information_request": {
+      "domain": "welfare_records",
+      "primary_action": "rti",
+      "secondary_action": null,
+      "why_en": "The citizen already asked for status or copies. Route as RTI under section 6. Do not convert it into a grievance unless they also want action.",
+      "why_hi": "नागरिक पहले से स्थिति या प्रतियाँ माँग रहा है। धारा 6 के आरटीआई के रूप में मार्ग।",
+      "not_en": "Not a complaint forum matter.",
+      "corpus": "rti"
+    },
+    "defect_refund_refused": {
+      "domain": "consumer",
+      "primary_action": "consumer_complaint",
+      "secondary_action": "nch_1915",
+      "why_en": "A private seller refused a remedy for defective goods. That is a consumer dispute under CPA 2019, not an RTI to a ministry.",
+      "why_hi": "निजी विक्रेता ने दोषपूर्ण सामान पर उपाय से इनकार किया। यह CPA 2019 का उपभोक्ता विवाद है, मंत्रालय को आरटीआई नहीं।",
+      "not_en": "Do not draft an RTI to Consumer Affairs for a shop refund.",
+      "corpus": "consumer"
+    },
+    "essential_supply_cut": {
+      "domain": "tenancy",
+      "primary_action": "tenant_representation",
+      "secondary_action": "rent_authority",
+      "why_en": "Withholding electricity/water is treated as an essential-supply issue in the Model Tenancy Act 2021 s.20 — only where a State has enacted it. Not an RTI unless the DISCOM is the actor and is a public authority.",
+      "why_hi": "बिजली/पानी काटना मॉडल किरायेदारी अधिनियम 2021 धारा 20 में आवश्यक आपूर्ति है — जहाँ राज्य ने अपनाया हो।",
+      "not_en": "Not a consumer-phone complaint. Not automatically an RTI.",
+      "corpus": "tenant"
+    },
+    "informal_eviction": {
+      "domain": "tenancy",
+      "primary_action": "tenant_representation",
+      "secondary_action": "rent_court",
+      "why_en": "A two-day vacate letter is not an eviction order under the Model Tenancy Act 2021 s.21 (where enacted). Route to a written representation and the competent Rent Court / State Act — not to a consumer commission.",
+      "why_hi": "दो दिन का खाली करने का पत्र बेदखली का आदेश नहीं है (मॉडल धारा 21, जहाँ लागू)।",
+      "not_en": "Not a welfare RTI unless records of a public housing authority are needed.",
+      "corpus": "tenant"
+    },
+    "police_assault": {
+      "domain": "police_accountability",
+      "primary_action": "nhrc_complaint",
+      "secondary_action": "hrcnet_or_shrc",
+      "why_en": "This is alleged use of force by a police officer — a human-rights complaint, not a records request and not a shop dispute. The dated corpus has NHRC/HRCNet filing rules, not Bharatiya Nyaya Sanhita or IPC offence sections, so Legalo will not invent those section numbers. Route to a self-contained complaint on HRCNet (NHRC or the State Commission).",
+      "why_hi": "यह पुलिस अधिकारी द्वारा बल प्रयोग का आरोप है — मानवाधिकार शिकायत, आरटीआई या दुकान विवाद नहीं। कॉर्पस में NHRC/HRCNet की प्रक्रिया है, BNS/IPC की धाराएँ नहीं; वे गढ़ेंगे नहीं।",
+      "not_en": "Not an RTI. Not a consumer complaint. Not a tenancy draft. Not an unsourced FIR template with invented BNS/IPC sections.",
+      "corpus": "nhrc"
+    },
+    "unpaid_wages": {
+      "domain": "workplace",
+      "primary_action": "labour_representation",
+      "secondary_action": "labour_department",
+      "why_en": "This is an employment dispute with a private employer, not a shop-refund and not a welfare RTI (unless the record is PF/EPFO). State labour statutes differ. The dated corpus has the Ministry of Labour portal, not a full Industrial Disputes Act pack, so Legalo will not invent IDA/Shops Act section numbers. Route: a written demand, then the State labour machinery listed on labour.gov.in.",
+      "why_hi": "यह निजी नियोक्ता से रोजगार विवाद है, दुकान-वापसी या कल्याण आरटीआई नहीं (जब तक अभिलेख PF/EPFO न हो)। राज्य श्रम कानून भिन्न। IDA धाराएँ गढ़ेंगे नहीं।",
+      "not_en": "Not a consumer complaint. Not an RTI to a ministry about a private wage. Not a tenancy draft.",
+      "corpus": "labour"
+    }
+  }
+}

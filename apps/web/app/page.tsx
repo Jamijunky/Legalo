@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   CaseResponse,
   createCase,
+  downloadDraft,
   patchDraft,
   pdfUrl,
   sendMessage,
@@ -14,12 +15,14 @@ import { GENERATION_LANGUAGES, copy, type UiLocale } from "@/lib/i18n";
 
 const DEMOS = {
   scholarship: "My scholarship has been pending for four months.",
+  eligibility: "Am I eligible for a scholarship?",
   police: "a police officer slapped me.",
   rti: "My ration card application has been pending for four months in Prayagraj. I want the current status and certified copies of file notings and reasons for delay.",
   rtiHi:
     "प्रयागराज में मेरा राशन कार्ड का आवेदन चार महीने से लंबित है। मुझे वर्तमान स्थिति और फ़ाइल नोटिंग की प्रमाणित प्रतियाँ चाहिए।",
   consumer:
     "A shop in Lucknow refused refund for a defective smartphone I bought last month for 18000 rupees. They said no returns after 7 days.",
+  workplace: "My employer has not paid my salary for three months.",
   notice:
     "Please read the uploaded notice. My landlord cut the electricity yesterday and says I must vacate in two days. The house is in Prayagraj, Uttar Pradesh.",
 };
@@ -153,19 +156,31 @@ export default function HomePage() {
             <div className="demos">
               <button className="demo" onClick={() => start(DEMOS.scholarship)}>
                 <strong>{t.demoRti}</strong>
-                <span className="note">Should ask what “pending” means — then NSP vs State</span>
+                <span className="note">{t.demoRtiHint}</span>
+              </button>
+              <button className="demo" onClick={() => start(DEMOS.eligibility)}>
+                <strong>{t.demoElig}</strong>
+                <span className="note">{t.demoEligHint}</span>
               </button>
               <button className="demo" onClick={() => start(DEMOS.police)}>
                 <strong>{t.demoPolice}</strong>
-                <span className="note">Not an RTI — HRCNet, no invented BNS/IPC sections</span>
+                <span className="note">{t.demoPoliceHint}</span>
               </button>
               <button className="demo" onClick={() => start(DEMOS.rti)}>
                 <strong>{t.demoRation}</strong>
-                <span className="note">Already an information request → RTI, State PDS</span>
+                <span className="note">{t.demoRationHint}</span>
+              </button>
+              <button className="demo" onClick={() => start(DEMOS.rtiHi, "hi")}>
+                <strong>{t.demoHi}</strong>
+                <span className="note">{t.demoHiHint}</span>
               </button>
               <button className="demo" onClick={() => start(DEMOS.consumer)}>
                 <strong>{t.demoConsumer}</strong>
-                <span className="note">Must not become an RTI to a ministry</span>
+                <span className="note">{t.demoConsumerHint}</span>
+              </button>
+              <button className="demo" onClick={() => start(DEMOS.workplace)}>
+                <strong>{t.demoWork}</strong>
+                <span className="note">{t.demoWorkHint}</span>
               </button>
               <button
                 className="demo"
@@ -201,6 +216,7 @@ export default function HomePage() {
 
       {cas && (
         <>
+          {cas.routed_on_device && <div className="chip">{t.onDevice}</div>}
           <div className="steps">
             {STEPS.map((s, i) => (
               <div key={s} className={i <= stepIndex ? "step on" : "step"}>
@@ -375,10 +391,16 @@ export default function HomePage() {
                   </>
                 )}
               </div>
-              {cas.ready_for_pdf && (
-                <a className="primary" href={pdfUrl(cas.case_id)} style={{ display: "inline-block", textDecoration: "none" }}>
-                  {t.pdf}
-                </a>
+              {cas.ready_for_pdf && cas.draft && (
+                cas.routed_on_device ? (
+                  <button className="primary" type="button" onClick={() => downloadDraft(cas.draft!)}>
+                    {t.pdf}
+                  </button>
+                ) : (
+                  <a className="primary" href={pdfUrl(cas.case_id)} style={{ display: "inline-block", textDecoration: "none" }}>
+                    {t.pdf}
+                  </a>
+                )
               )}
             </section>
           )}

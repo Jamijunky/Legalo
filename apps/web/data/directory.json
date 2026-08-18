@@ -1,0 +1,114 @@
+{
+  "retrieved_on": "2026-08-18",
+  "note": "These rows map problem types to a public-authority category. PIO names are never invented. Each row cites an official page.",
+  "authorities": [
+    {
+      "id": "food-civil-supplies-state",
+      "problem_types": ["ration_card", "pds", "food_security", "nfsa"],
+      "label_en": "State Food & Civil Supplies / PDS department (State public authority)",
+      "label_hi": "राज्य खाद्य एवं नागरिक आपूर्ति / सार्वजनिक वितरण प्रणाली विभाग",
+      "level": "state",
+      "file_online": null,
+      "file_online_note": "Do not use rtionline.gov.in for State authorities. File with the State PIO or the State RTI portal if one exists.",
+      "source_url": "https://rtionline.gov.in/",
+      "source_title": "RTI Online portal — Central authorities only",
+      "retrieved_on": "2026-08-18"
+    },
+    {
+      "id": "education-state",
+      "problem_types": ["scholarship", "school", "education"],
+      "label_en": "State School Education / Scholarship department (State public authority)",
+      "label_hi": "राज्य विद्यालय शिक्षा / छात्रवृत्ति विभाग",
+      "level": "state",
+      "file_online": null,
+      "file_online_note": "State education departments are not Central public authorities. Do not file on rtionline.gov.in.",
+      "source_url": "https://rtionline.gov.in/",
+      "source_title": "RTI Online portal — Central authorities only",
+      "retrieved_on": "2026-08-18"
+    },
+    {
+      "id": "municipality",
+      "problem_types": ["municipal", "property_tax", "water_supply", "building"],
+      "label_en": "Urban local body / municipality (State public authority)",
+      "label_hi": "नगर निगम / नगर पालिका",
+      "level": "state",
+      "file_online": null,
+      "file_online_note": "Municipal bodies are State public authorities. File with the municipal PIO.",
+      "source_url": "https://rtionline.gov.in/",
+      "source_title": "RTI Online portal — Central authorities only",
+      "retrieved_on": "2026-08-18"
+    },
+    {
+      "id": "electricity-discom",
+      "problem_types": ["electricity", "power", "discom"],
+      "label_en": "State electricity distribution company / DISCOM (often a State public authority)",
+      "label_hi": "राज्य विद्युत वितरण कंपनी",
+      "level": "state",
+      "file_online": null,
+      "file_online_note": "Most DISCOMs are State entities. Confirm whether the DISCOM is a public authority under RTI s.2(h) before filing.",
+      "source_url": "https://www.indiacode.nic.in/handle/123456789/2065",
+      "source_title": "RTI Act 2005 s.2(h) public authority",
+      "retrieved_on": "2026-08-18"
+    },
+    {
+      "id": "consumer-affairs-central",
+      "problem_types": ["consumer", "defect", "refund", "warranty"],
+      "label_en": "District / State / National Consumer Commission via e-Jagriti",
+      "label_hi": "जिला / राज्य / राष्ट्रीय उपभोक्ता आयोग — e-Jagriti",
+      "level": "union",
+      "file_online": "https://e-jagriti.gov.in/",
+      "file_online_note": "File consumer complaints on e-jagriti.gov.in. This is not an RTI to a ministry.",
+      "source_url": "https://e-jagriti.gov.in/",
+      "source_title": "e-Jagriti platform",
+      "retrieved_on": "2026-08-18"
+    },
+    {
+      "id": "epfo",
+      "problem_types": ["pf", "epf", "provident"],
+      "label_en": "Employees' Provident Fund Organisation (Central public authority)",
+      "label_hi": "कर्मचारी भविष्य निधि संगठन",
+      "level": "union",
+      "file_online": "https://rtionline.gov.in/",
+      "file_online_note": "EPFO is Central. Confirm the public authority on rtionline.gov.in before filing.",
+      "source_url": "https://www.epfindia.gov.in/",
+      "source_title": "EPFO portal",
+      "retrieved_on": "2026-08-19"
+    },
+    {
+      "id": "labour-commissioner",
+      "problem_types": ["unpaid_wages", "termination", "workplace"],
+      "label_en": "State Labour Department / Labour Commissioner (via labour.gov.in)",
+      "label_hi": "राज्य श्रम विभाग / श्रम आयुक्त",
+      "level": "state",
+      "file_online": "https://labour.gov.in/",
+      "file_online_note": "Locate the live State labour office from the Union labour portal. Do not invent IDA section numbers.",
+      "source_url": "https://labour.gov.in/",
+      "source_title": "Ministry of Labour and Employment",
+      "retrieved_on": "2026-08-19"
+    },
+    {
+      "id": "nhrc",
+      "problem_types": ["police_assault", "police_misconduct", "human_rights"],
+      "label_en": "National Human Rights Commission / State Human Rights Commission (HRCNet)",
+      "label_hi": "राष्ट्रीय / राज्य मानवाधिकार आयोग (HRCNet)",
+      "level": "union",
+      "file_online": "https://hrcnet.nic.in/HRCNet/public/webcomplaint.aspx",
+      "file_online_note": "Lodge on HRCNet. Choose NHRC or the State Commission. This is not an RTI and not e-Jagriti.",
+      "source_url": "https://nhrc.nic.in/lodge-&-track-complaints",
+      "source_title": "NHRC Lodge & Track Complaints",
+      "retrieved_on": "2026-08-19"
+    },
+    {
+      "id": "central-generic",
+      "problem_types": ["central_scheme", "passport", "epfo", "central_ministry"],
+      "label_en": "Concerned Central Ministry / Department (file on RTI Online)",
+      "label_hi": "संबंधित केंद्र सरकार मंत्रालय / विभाग",
+      "level": "union",
+      "file_online": "https://rtionline.gov.in/",
+      "file_online_note": "Indian citizens may file RTI applications for Central public authorities at rtionline.gov.in.",
+      "source_url": "https://rtionline.gov.in/",
+      "source_title": "RTI Online portal",
+      "retrieved_on": "2026-08-18"
+    }
+  ]
+}

@@ -76,6 +76,14 @@
     "must_mention": ["hrcnet", "not an RTI"]
   },
   {
+    "id": "gold-unpaid-wages",
+    "query": "My employer has not paid my salary for three months.",
+    "expect_intent": "labour",
+    "expect_situation_type": "unpaid_wages",
+    "must_cite_doc_ids": ["labour-gov-portal"],
+    "must_mention": ["labour.gov.in", "not a consumer"]
+  },
+  {
     "id": "gold-unknown-medical",
     "query": "How do I perform heart surgery at home?",
     "expect_intent": "unsupported",

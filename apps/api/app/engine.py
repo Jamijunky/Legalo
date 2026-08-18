@@ -20,10 +20,11 @@ from .schemas import CaseResponse, GenerationTrace, Intent, InterpretationView, 
 from .slots import apply_answer, extract_from_text, next_question
 
 DOC_FILTER: dict[Intent, set[str]] = {
-    "rti": {"rti-act-2005", "rti-rules-2012", "rti-faq-dopt-2012", "rti-online-portal"},
+    "rti": {"rti-act-2005", "rti-rules-2012", "rti-faq-dopt-2012", "rti-online-portal", "epfo-portal"},
     "consumer": {"cpa-2019", "cpa-jurisdiction-rules-2021", "e-jagriti-portal"},
     "tenant": {"model-tenancy-act-2021"},
     "nhrc": {"nhrc-hrcnet-portal", "nhrc-faq-complaints"},
+    "labour": {"labour-gov-portal"},
     "unsupported": set(),
 }
 
@@ -122,6 +123,17 @@ def _explain(intent: Intent, sources: list[SourceRef], slots: dict[str, str]) ->
             "that path, must follow the live criminal-procedure law — verify on the official India Code / local police "
             "instructions; this tool will not draft unsourced charge language."
         )
+    elif intent == "labour":
+        bits.append(
+            "This is a workplace dispute with an employer, not a consumer complaint (you were not buying goods) and not "
+            "an RTI unless the record is held by a public authority such as EPFO. The Ministry of Labour and Employment "
+            "portal is https://labour.gov.in/ (snapshot 19 August 2026). Use it to find the live State labour office."
+        )
+        bits.append(
+            "The dated corpus does not include the Industrial Disputes Act or your State’s Shops and Establishments Act. "
+            "Legalo will not invent those section numbers. Send a written demand first; then approach the competent "
+            "labour machinery of the State where you worked. State law may differ."
+        )
     dated = "; ".join(f"{s.title} s.{s.section} (published {s.published_on})" for s in sources[:5])
     bits.append(f"Sources used: {dated}.")
     bits.append("This is not legal advice. Review every draft. Legalo does not file on government portals.")
@@ -195,6 +207,11 @@ def _explain_hi(intent: Intent, sources: list[SourceRef], slots: dict[str, str])
             "NHRC FAQ (प्राप्ति 19 August 2026): शिकायत हिन्दी, अंग्रेज़ी या आठवीं अनुसूची की भाषा में हो सकती है; स्वयंपूर्ण हो; शुल्क नहीं। "
             "BNS/IPC की धाराएँ इस कॉर्पस में नहीं हैं — लीगैलो वे गढ़ेगा नहीं।"
         )
+    elif intent == "labour":
+        bits.append(
+            "यह नियोक्ता से कार्यस्थल विवाद है, उपभोक्ता शिकायत नहीं, और आरटीआई तभी जब अभिलेख EPFO जैसे लोक प्राधिकरण के पास हो। "
+            "श्रम मंत्रालय पोर्टल https://labour.gov.in/ (19 August 2026)। राज्य श्रम कार्यालय वहीं से खोजें। IDA धाराएँ गढ़ेंगे नहीं। राज्य कानून भिन्न हो सकता है।"
+        )
     dated = "; ".join(f"{s.title} s.{s.section} (published {s.published_on})" for s in sources[:5])
     bits.append(f"प्रयुक्त स्रोत: {dated}।")
     bits.append("यह कानूनी सलाह नहीं है। हर मसौदा जाँचें। लीगैलो सरकारी पोर्टल पर दाखिल नहीं करता।")
@@ -245,8 +262,8 @@ def _banners(intent: Intent, sources: list[SourceRef]) -> list[str]:
     out = [
         "Not legal advice. Official procedures change — verify URLs, fees and forums on the live government site before you file."
     ]
-    if intent == "tenant" or any(s.state_law_may_differ for s in sources):
-        out.append("State law may differ. The Model Tenancy Act 2021 applies only where a State/UT has enacted it. Act dated 2 June 2021.")
+    if intent == "tenant" or intent == "labour" or any(s.state_law_may_differ for s in sources):
+        out.append("State law may differ. Verify the statute of the State where this happened. Model or Union texts are not automatically local law.")
     for s in sources:
         if s.stale_procedural:
             out.append(

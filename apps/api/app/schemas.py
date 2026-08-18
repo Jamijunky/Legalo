@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-Intent = Literal["rti", "consumer", "tenant", "nhrc", "unsupported"]
+Intent = Literal["rti", "consumer", "tenant", "nhrc", "labour", "unsupported"]
 Step = Literal["ingest", "understand", "rights", "path", "draft", "takeaway"]
 
 

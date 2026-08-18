@@ -18,8 +18,16 @@ from .config import settings
 from .llm import generate_json
 from .schemas import Intent, SlotQuestion
 
-Domain = Literal["welfare_records", "consumer", "tenancy", "police_accountability", "unsupported"]
-Action = Literal["rti", "rti_for_criteria", "consumer_complaint", "tenant_representation", "nhrc_complaint", "none"]
+Domain = Literal["welfare_records", "consumer", "tenancy", "police_accountability", "workplace", "unsupported"]
+Action = Literal[
+    "rti",
+    "rti_for_criteria",
+    "consumer_complaint",
+    "tenant_representation",
+    "nhrc_complaint",
+    "labour_representation",
+    "none",
+]
 Level = Literal["union", "state", "unknown"]
 
 PENDING_KINDS = ("pending_application", "disbursement_failed", "verification_gap", "eligibility_question")
@@ -68,6 +76,8 @@ def _has(blob: str, *needles: str) -> bool:
 
 
 def detect_benefit(blob: str) -> str | None:
+    if _has(blob, "provident", "epf", "epfo", "uan") or (re.search(r"\bpf\b", blob, re.I) and _has(blob, "fund", "pending", "contribution", "employer", "withdraw")):
+        return "pf"
     if _has(blob, "scholarship", "छात्रवृत्ति", "nsp"):
         return "scholarship"
     if _has(blob, "ration", "राशन", "pds", "nfsa", "ration card"):
@@ -78,6 +88,8 @@ def detect_benefit(blob: str) -> str | None:
 
 
 def detect_level(blob: str, benefit: str | None) -> Level:
+    if benefit == "pf":
+        return "union"
     if _has(blob, "nsp", "national scholarship", "central scheme", "pm-"):
         return "union"
     if _has(blob, "state scholarship", "state scheme"):
@@ -146,6 +158,27 @@ def _is_police_assault(blob: str) -> bool:
     return actor and harm
 
 
+def _is_workplace(blob: str) -> bool:
+    if _has(blob, "refund", "defective", "smartphone", "landlord", "tenant"):
+        return False
+    return _has(
+        blob,
+        "unpaid salary",
+        "salary unpaid",
+        "wages not paid",
+        "unpaid wages",
+        "employer fired",
+        "terminated me",
+        "i was fired",
+        "retrench",
+        "वेतन नहीं",
+        "नौकरी से निकाल",
+    ) or (
+        _has(blob, "employer", "naukri", "नियोक्ता")
+        and _has(blob, "salary", "wage", "fired", "terminat", "वेतन")
+    )
+
+
 def _domain_from_blob(blob: str) -> Domain:
     if _is_police_assault(blob):
         return "police_accountability"
@@ -153,6 +186,10 @@ def _domain_from_blob(blob: str) -> Domain:
         return "tenancy"
     if _has(blob, "refund", "defective", "shop", "warranty", "smartphone", "वापसी", "खराब", "दुकान"):
         return "consumer"
+    if detect_benefit(blob) == "pf":
+        return "welfare_records"
+    if _is_workplace(blob):
+        return "workplace"
     if detect_benefit(blob) or _has(blob, "rti", "application has been pending", "public authority", "ration", "scholarship"):
         return "welfare_records"
     if _has(blob, "surgery", "hack", "bomb"):
@@ -188,6 +225,7 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         "consumer",
         "tenancy",
         "police_accountability",
+        "workplace",
         "unsupported",
     }:
         domain = llm["domain"]
@@ -199,6 +237,8 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
     if _is_police_assault(blob):
         domain = "police_accountability"
         source = "rules" if source == "rules" else "llm+rules"
+    if _is_workplace(blob) and domain not in {"consumer", "tenancy", "police_accountability"} and detect_benefit(blob) != "pf":
+        domain = "workplace"
 
     situation = slots.get("pending_kind") or _pending_kind_from_text(blob)
     if llm and llm.get("situation_type") in TABLE["pathways"] and not slots.get("pending_kind"):
@@ -257,10 +297,17 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         if benefit == "ration":
             level = "state"
             needs_level = False
+        if benefit == "pf":
+            level = "union"
+            needs_level = False
     elif domain == "police_accountability":
         situation = "police_assault"
         level = "union"
         evidence.append("alleged police use of force — human-rights complaint, not RTI")
+    elif domain == "workplace":
+        situation = "unpaid_wages"
+        level = "state"
+        evidence.append("employment dispute — not consumer, not unsourced IDA sections")
     else:
         situation = "unsupported"
 
@@ -284,6 +331,8 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
     dept = None
     if domain == "police_accountability":
         dept = "nhrc"
+    elif domain == "workplace":
+        dept = "labour-commissioner"
     elif benefit and benefit in TABLE["benefits"]:
         bmeta = TABLE["benefits"][benefit]
         if level == "union":
@@ -304,6 +353,8 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         why += " Scholarship may be a State scheme or a Central/NSP scheme — that choice decides the PIO and whether rtionline.gov.in is even lawful to use."
     if benefit == "ration":
         why += " Ration / PDS is a State Food & Civil Supplies record. rtionline.gov.in will bounce it."
+    if benefit == "pf":
+        why += " Provident-fund records are held by EPFO, a Central public authority — not a shop forum, and not a State PDS RTI."
 
     return Interpretation(
         domain=domain,  # type: ignore[arg-type]
@@ -331,6 +382,8 @@ def intent_of(interp: Interpretation) -> Intent:
         return "tenant"
     if interp.domain == "police_accountability":
         return "nhrc"
+    if interp.domain == "workplace":
+        return "labour"
     if interp.domain == "unsupported" or interp.primary_action == "none":
         return "unsupported"
     return "rti"

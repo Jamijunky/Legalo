@@ -68,6 +68,13 @@ def test_police_slap_is_nhrc_not_unsupported():
     assert "323" not in (resp.explanation or "")
 
 
+def test_unpaid_salary_is_labour_not_consumer():
+    resp = engine.create("My employer has not paid my salary for three months.", "en", "en")
+    assert resp.intent == "labour"
+    assert resp.interpretation and resp.interpretation.situation_type == "unpaid_wages"
+    assert "consumer" in (resp.interpretation.not_this or "").lower()
+
+
 def test_hindi_rti_explanation_without_llm():
     resp = engine.create(
         "प्रयागराज में मेरा राशन कार्ड का आवेदन चार महीने से लंबित है।",

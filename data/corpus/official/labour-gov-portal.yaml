@@ -1,0 +1,11 @@
+id: labour-gov-portal
+title: Ministry of Labour & Employment — official portal
+publisher: Ministry of Labour and Employment, Government of India
+source_url: https://labour.gov.in/
+doc_type: portal_help
+jurisdiction: union
+published_on: "2026-08-19"
+effective_on: "2026-08-19"
+retrieved_on: "2026-08-19"
+notes: "Portal snapshot retrieved 2026-08-19. Used only as the official entry point to locate labour services / offices. State labour statutes are not ingested; Legalo must not invent Industrial Disputes Act or Shops and Establishments section numbers from this page."
+stale_procedural: true

@@ -8,7 +8,7 @@ Multilingual UI, RAG, PDFs and jurisdiction notes are table stakes. A judge will
 
 A weak system translates that and retrieves scholarship FAQs. Legalo has to decide what *kind* of civic problem it is (silent file vs missing payment vs KYC gap vs eligibility question), what would change the route (NSP vs State), whether this is an information request or a grievance, and only then draft.
 
-v1 is therefore **not** “AI for every civic problem in 22 languages.” It is a router that is unusually careful in **three domains** (welfare/records → RTI, consumer, tenancy), with pathways in [`data/routing/pathways.json`](data/routing/pathways.json) so a fourth domain is a new row, not a new chatbot.
+v1 is therefore **not** “AI for every civic problem in 22 languages.” It is a router that is unusually careful in **welfare/records → RTI, consumer, tenancy, police accountability (NHRC), and workplace wages** — with pathways in [`data/routing/pathways.json`](data/routing/pathways.json) so a new domain is a new row, not a new chatbot.
 
 ## What the router must get right
 
@@ -22,9 +22,12 @@ v1 is therefore **not** “AI for every civic problem in 22 languages.” It is 
 | Probe | Input | What must happen |
 |---|---|---|
 | Vague welfare | “My scholarship has been pending for four months.” | Ask what “pending” means, then NSP vs State, then RTI for the *right* file |
+| Eligibility trap | “Am I eligible for a scholarship?” | Refuse yes/no; RTI for criteria the department already holds |
 | Explicit records | Ration card in Prayagraj, wants notings | Skip the discriminator; State Food & Civil Supplies RTI |
 | Wrong forum trap | Shop refused refund | Consumer Commission / e-Jagriti — **not** RTI |
 | Mixed tenancy | Electricity cut + 2-day vacate notice | Model Tenancy ss.20–21; state law may differ; **not** a consumer forum |
+| Police force | “A police officer slapped me.” | NHRC/HRCNet — **not** RTI, no invented BNS/IPC sections |
+| Workplace | Unpaid salary | Labour demand + labour.gov.in — **not** consumer, no invented IDA sections |
 
 This is **not legal advice**. Legalo does not file on government portals.
 
@@ -45,7 +48,9 @@ Live table in the app: [/sources](http://localhost:3000/sources)
 | Consumer Protection Act, 2019 | Dept of Consumer Affairs | 2019-08-09 | 2020-07-20 | 2026-08-18 | [indiacode](https://www.indiacode.nic.in/handle/123456789/17942?locale=en) |
 | Jurisdiction Rules, 2021 (G.S.R. 912(E)) | Dept of Consumer Affairs / PIB | 2021-12-30 | 2021-12-30 | 2026-08-18 | [PIB PRID 1786342](https://www.pib.gov.in/PressReleasePage.aspx?PRID=1786342) |
 | e-Jagriti platform | Dept of Consumer Affairs | 2025-06-03 | 2025-06-03 | 2026-08-18 | [e-jagriti.gov.in](https://e-jagriti.gov.in/) |
-| Model Tenancy Act, 2021 | MoHUA | 2021-06-02 | 2021-06-02 | 2026-08-18 | [MoHUA PDF](https://mohua.gov.in/upload/uploadfiles/files/Model-Tenancy-Act-English-02_06_2021.pdf) |
+| NHRC Lodge & Track / HRCNet | NHRC | 2026-04-07 | 2026-04-07 | 2026-08-19 | [nhrc.nic.in](https://nhrc.nic.in/lodge-&-track-complaints) |
+| Ministry of Labour portal | MoLE | 2026-08-19 | 2026-08-19 | 2026-08-19 | [labour.gov.in](https://labour.gov.in/) |
+| EPFO portal | EPFO | 2026-08-19 | 2026-08-19 | 2026-08-19 | [epfindia.gov.in](https://www.epfindia.gov.in/) |
 
 **Deliberate correction vs older tutorials:** e-Daakhil (`edaakhil.nic.in`) returned HTTP 500 on 2026-08-18. The ministry lists **e-Jagriti** as the nodal filing platform. The original CPA 2019 pecuniary figures (₹1 crore / ₹10 crore) were replaced by the 30 December 2021 Rules (₹50 lakh / ₹2 crore). Legalo cites the later rules and tells you to re-check the live portal.
 
@@ -87,11 +92,11 @@ Open http://localhost:3000
 
 ### Vercel (frontend)
 
-The Next.js app lives in `apps/web`. Root `vercel.json` exports that app as static files (`apps/web/out`) so Vercel does not need a Next.js `package.json` at the repo root.
+The Next.js app lives in `apps/web`. Root `vercel.json` exports a **static** build. The dated corpus is bundled, so the live site routes **on-device** (no FastAPI required for judges). After you change `data/corpus` or `data/routing`, run `python3 scripts/sync_web_data.py` so `apps/web/data/` stays in sync.
 
 If a deploy still fails with “No Next.js version detected”, in **Settings → Build and Deployment** set **Framework Preset** to **Other** (turn Override on) and **Output Directory** to `apps/web/out`, then redeploy with cache cleared.
 
-Vercel only hosts the UI. Set `NEXT_PUBLIC_API_URL` to a public FastAPI URL (see `render.yaml`) or the live form will call `http://localhost:8000`.
+Optional: set `NEXT_PUBLIC_API_URL` to a public FastAPI URL for OCR/PDF via the Python API (`render.yaml`). On `localhost`, the UI tries `:8000` first and falls back on-device.
 
 ### Docker
 
@@ -127,10 +132,10 @@ Gold eval checks: intent routing, required Act citations, e-Jagriti mention, ten
 
 ## What this prototype will not do
 
-- File on rtionline.gov.in or e-jagriti.gov.in
-- Invent PIO names
+- File on rtionline.gov.in, e-jagriti.gov.in, or HRCNet
+- Invent PIO names, BNS/IPC offence sections, or Industrial Disputes Act section numbers
 - Answer from blogs
-- Cover workplace disputes in v1 (state-law variance)
+- Give a live yes/no on scheme eligibility without a dated circular in the corpus
 
 ## Demo video
 

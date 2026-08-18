@@ -17,10 +17,10 @@ class SlotSpec:
 
 
 RTI_SLOTS = [
-    SlotSpec("applicant_name", "What is your full name (as it should appear on the RTI)?", "आरटीआई पर आपका पूरा नाम क्या है?"),
-    SlotSpec("applicant_address", "What is your complete postal address?", "आपका पूरा डाक पता क्या है?"),
-    SlotSpec("applicant_contact", "Phone or email where the PIO can reach you?", "फोन या ईमेल जिस पर PIO आपसे संपर्क कर सके?"),
-    SlotSpec("state", "Which State / UT is this about?", "यह किस राज्य / केंद्र शासित प्रदेश के बारे में है?"),
+    SlotSpec("applicant_name", "What is your full name (as it should appear on the RTI)?", "आरटीआई पर आपका पूरा नाम क्या है?", required=False),
+    SlotSpec("applicant_address", "What is your complete postal address?", "आपका पूरा डाक पता क्या है?", required=False),
+    SlotSpec("applicant_contact", "Phone or email where the PIO can reach you?", "फोन या ईमेल जिस पर PIO आपसे संपर्क कर सके?", required=False),
+    SlotSpec("state", "Which State / UT is this about?", "यह किस राज्य / केंद्र शासित प्रदेश के बारे में है?", required=False),
     SlotSpec(
         "public_authority",
         "Which department or office holds the record, if you know?",
@@ -37,25 +37,25 @@ RTI_SLOTS = [
 ]
 
 CONSUMER_SLOTS = [
-    SlotSpec("complainant_name", "Your full name?", "आपका पूरा नाम?"),
-    SlotSpec("complainant_address", "Your address (this often decides which District Commission)?", "आपका पता (जिला आयोग यहीं से तय होता है)?"),
-    SlotSpec("opposite_party", "Name of the shop / company / seller?", "दुकान / कंपनी / विक्रेता का नाम?"),
+    SlotSpec("complainant_name", "Your full name?", "आपका पूरा नाम?", required=False),
+    SlotSpec("complainant_address", "Your address (this often decides which District Commission)?", "आपका पता (जिला आयोग यहीं से तय होता है)?", required=False),
+    SlotSpec("opposite_party", "Name of the shop / company / seller?", "दुकान / कंपनी / विक्रेता का नाम?", required=False),
     SlotSpec("opposite_party_address", "Seller address, if you have it.", "विक्रेता का पता, यदि पता हो।", required=False),
-    SlotSpec("goods_service", "What did you buy or which service did you hire?", "आपने क्या खरीदा या कौन सी सेवा ली?"),
-    SlotSpec("amount", "How much did you pay (₹)?", "आपने कितने रुपये दिए?"),
-    SlotSpec("purchase_date", "Date of purchase / booking?", "खरीद / बुकिंग की तारीख?"),
-    SlotSpec("defect", "What is wrong, and how did the seller refuse to help?", "क्या खराबी है, और विक्रेता ने मदद से कैसे मना किया?"),
-    SlotSpec("relief", "What do you want — refund, replacement, repair, compensation?", "आप क्या चाहते हैं — वापसी, बदली, मरम्मत, मुआवजा?"),
+    SlotSpec("goods_service", "What did you buy or which service did you hire?", "आपने क्या खरीदा या कौन सी सेवा ली?", required=False),
+    SlotSpec("amount", "How much did you pay (₹)?", "आपने कितने रुपये दिए?", required=False),
+    SlotSpec("purchase_date", "Date of purchase / booking?", "खरीद / बुकिंग की तारीख?", required=False),
+    SlotSpec("defect", "What is wrong, and how did the seller refuse to help?", "क्या खराबी है, और विक्रेता ने मदद से कैसे मना किया?", required=False),
+    SlotSpec("relief", "What do you want — refund, replacement, repair, compensation?", "आप क्या चाहते हैं — वापसी, बदली, मरम्मत, मुआवजा?", required=False),
 ]
 
 TENANT_SLOTS = [
-    SlotSpec("tenant_name", "Your name?", "आपका नाम?"),
-    SlotSpec("tenant_contact", "Phone or email?", "फोन या ईमेल?"),
-    SlotSpec("landlord_name", "Landlord's name?", "मकान मालिक का नाम?"),
-    SlotSpec("premises", "Full address of the rented house?", "किराये के मकान का पूरा पता?"),
-    SlotSpec("state", "State / UT of the premises?", "मकान किस राज्य में है?"),
-    SlotSpec("issue", "What exactly happened (electricity cut, 2-day eviction notice, etc.)?", "ठीक क्या हुआ?"),
-    SlotSpec("facts_date", "When did this happen?", "यह कब हुआ?"),
+    SlotSpec("tenant_name", "Your name?", "आपका नाम?", required=False),
+    SlotSpec("tenant_contact", "Phone or email?", "फोन या ईमेल?", required=False),
+    SlotSpec("landlord_name", "Landlord's name?", "मकान मालिक का नाम?", required=False),
+    SlotSpec("premises", "Full address of the rented house?", "किराये के मकान का पूरा पता?", required=False),
+    SlotSpec("state", "State / UT of the premises?", "मकान किस राज्य में है?", required=False),
+    SlotSpec("issue", "What exactly happened (electricity cut, 2-day eviction notice, etc.)?", "ठीक क्या हुआ?", required=False),
+    SlotSpec("facts_date", "When did this happen?", "यह कब हुआ?", required=False),
 ]
 
 
@@ -64,6 +64,7 @@ SLOTS: dict[Intent, list[SlotSpec]] = {
     "consumer": CONSUMER_SLOTS,
     "tenant": TENANT_SLOTS,
     "nhrc": [],
+    "labour": [],
     "unsupported": [],
 }
 
@@ -102,6 +103,9 @@ def extract_from_text(intent: Intent, text: str) -> dict[str, str]:
         found.setdefault("facts", text.strip()[:800])
         if re.search(r"slap", text, re.I):
             found.setdefault("issue", "Alleged slap / use of force by a police officer.")
+    if intent == "labour":
+        found.setdefault("facts", text.strip()[:800])
+        found.setdefault("issue", "Unpaid wages / termination by employer (complete dates and amounts).")
     if intent == "tenant":
         if re.search(r"electric", text, re.I):
             found.setdefault("issue", "Landlord withheld electricity / essential supply and demanded vacation of the premises.")

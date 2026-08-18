@@ -15,6 +15,11 @@
       "department_state": "education-state",
       "department_union": "central-generic",
       "union_hint": "NSAP is Central; many old-age pensions are State. Ask scheme_level."
+    },
+    "pf": {
+      "department_state": null,
+      "department_union": "epfo",
+      "union_hint": "EPFO is a Central public authority. rtionline.gov.in may be used after confirming the office."
     }
   },
   "pathways": {
@@ -98,6 +103,15 @@
       "why_hi": "यह पुलिस अधिकारी द्वारा बल प्रयोग का आरोप है — मानवाधिकार शिकायत, आरटीआई या दुकान विवाद नहीं। कॉर्पस में NHRC/HRCNet की प्रक्रिया है, BNS/IPC की धाराएँ नहीं; वे गढ़ेंगे नहीं।",
       "not_en": "Not an RTI. Not a consumer complaint. Not a tenancy draft. Not an unsourced FIR template with invented BNS/IPC sections.",
       "corpus": "nhrc"
+    },
+    "unpaid_wages": {
+      "domain": "workplace",
+      "primary_action": "labour_representation",
+      "secondary_action": "labour_department",
+      "why_en": "This is an employment dispute with a private employer, not a shop-refund and not a welfare RTI (unless the record is PF/EPFO). State labour statutes differ. The dated corpus has the Ministry of Labour portal, not a full Industrial Disputes Act pack, so Legalo will not invent IDA/Shops Act section numbers. Route: a written demand, then the State labour machinery listed on labour.gov.in.",
+      "why_hi": "यह निजी नियोक्ता से रोजगार विवाद है, दुकान-वापसी या कल्याण आरटीआई नहीं (जब तक अभिलेख PF/EPFO न हो)। राज्य श्रम कानून भिन्न। IDA धाराएँ गढ़ेंगे नहीं।",
+      "not_en": "Not a consumer complaint. Not an RTI to a ministry about a private wage. Not a tenancy draft.",
+      "corpus": "labour"
     }
   }
 }

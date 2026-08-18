@@ -119,6 +119,25 @@ def build_path(intent: Intent, slots: dict[str, str], sources: list[SourceRef]) 
                 detail="HRCNet publishes NHRC toll-free 14433 for queries. This is not an emergency dispatch number. Legalo does not file.",
             ),
         ]
+    if intent == "labour":
+        st = slots.get("state", "the State where you worked")
+        return [
+            PathStep(
+                title="Write a demand to the employer first",
+                detail="State the period, amount, and what happened, in your own words. Do not paste invented IDA/Shops Act section numbers — those Acts are not in this dated corpus and vary by State.",
+            ),
+            PathStep(
+                title="Find the live labour office",
+                detail=f"Use the Ministry of Labour and Employment portal to locate services and the labour machinery of {st}. Snapshot retrieved 2026-08-19.",
+                url="https://labour.gov.in/",
+                verify="Confirm the live State labour office / Shram Suvidha links on labour.gov.in.",
+            ),
+            PathStep(
+                title="PF is a different route",
+                detail="If the missing money is provident-fund (EPFO), that record is held by a Central public authority. That is an RTI/EPFO path, not this wage letter. epfindia.gov.in snapshot 2026-08-19.",
+                url="https://www.epfindia.gov.in/",
+            ),
+        ]
     return []
 
 
@@ -237,6 +256,29 @@ def build_draft(intent: Intent, slots: dict[str, str], language: str) -> DraftBo
         return DraftBody(
             template_id="nhrc",
             title="Human rights complaint draft (HRCNet)",
+            language=language,
+            fields=fields,
+            html=html,
+            plain=_html_to_plain(html),
+        )
+    if intent == "labour":
+        fields = {
+            "worker_address": slots.get("worker_address") or slots.get("state", ""),
+            "date": today,
+            "employer_name": slots.get("employer_name", "[employer]"),
+            "employer_address": slots.get("employer_address", "[employer address]"),
+            "issue_title": (slots.get("issue") or "unpaid wages / termination")[:80],
+            "facts": slots.get("facts") or slots.get("issue") or "[period, amount, what happened]",
+            "request": slots.get("request", "pay the outstanding wages / reverse the unlawful termination and reply in writing"),
+            "state": slots.get("state", "[State]"),
+            "worker_name": slots.get("worker_name") or slots.get("complainant_name", "[name]"),
+            "worker_contact": slots.get("worker_contact") or slots.get("complainant_contact", "[contact]"),
+            "retrieved_on": "2026-08-19",
+        }
+        html = _fill("labour", fields)
+        return DraftBody(
+            template_id="labour",
+            title="Workplace demand letter (no unsourced IDA sections)",
             language=language,
             fields=fields,
             html=html,
