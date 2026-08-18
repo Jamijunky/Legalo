@@ -27,6 +27,18 @@
       "retrieved_on": "2026-08-18"
     },
     {
+      "id": "social-welfare-state",
+      "problem_types": ["pension", "old_age_pension", "nsap", "widow_pension"],
+      "label_en": "State Social Welfare / pension department (State public authority)",
+      "label_hi": "राज्य समाज कल्याण / पेंशन विभाग",
+      "level": "state",
+      "file_online": null,
+      "file_online_note": "State social-welfare / pension offices are not Central public authorities. Do not file on rtionline.gov.in unless the scheme is Central (e.g. NSAP).",
+      "source_url": "https://rtionline.gov.in/",
+      "source_title": "RTI Online portal — Central authorities only",
+      "retrieved_on": "2026-08-19"
+    },
+    {
       "id": "municipality",
       "problem_types": ["municipal", "property_tax", "water_supply", "building"],
       "label_en": "Urban local body / municipality (State public authority)",

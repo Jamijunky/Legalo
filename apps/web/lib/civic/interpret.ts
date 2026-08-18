@@ -43,7 +43,13 @@ const TABLE = pathways as {
 
 function has(blob: string, ...needles: string[]) {
   const low = blob.toLowerCase();
-  return needles.some((n) => low.includes(n.toLowerCase()));
+  return needles.some((n) => {
+    const nlow = n.toLowerCase();
+    if (nlow.length <= 3 && /^[\x00-\x7F]+$/.test(nlow) && /[a-z0-9]$/i.test(nlow)) {
+      return new RegExp(`\\b${nlow.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(blob);
+    }
+    return low.includes(nlow);
+  });
 }
 
 export function detectBenefit(blob: string): string | null {
@@ -84,7 +90,7 @@ function detectLevel(blob: string, benefit: string | null): "union" | "state" | 
 }
 
 function pendingKindFromText(blob: string): string | null {
-  if (has(blob, "am i eligible", "do i qualify", "eligibility", "क्या मैं पात्र", "पात्रता")) return "eligibility_question";
+  if (has(blob, "am i eligible", "do i qualify", "eligibility", "क्या मैं पात्र", "पात्रता", "पात्र हूँ", "पात्र हूं")) return "eligibility_question";
   if (has(blob, "approved", "selected", "sanctioned", "money has not", "payment not", "disburs", "dbt", "amount not credit")) {
     return "disbursement_failed";
   }
@@ -128,23 +134,40 @@ function isWorkplace(blob: string) {
   );
 }
 
+function isTenancy(blob: string) {
+  const negated = has(blob, "not a tenant", "not the tenant", "i am not a tenant");
+  const landlordish = has(blob, "landlord", "मकान मालिक", "evict", "vacate", "खाली कर", "किरायेदार");
+  if (negated && !landlordish) return false;
+  return has(blob, "landlord", "tenant", "evict", "vacate", "मकान मालिक", "किरायेदार", "खाली कर");
+}
+
+function isConsumer(blob: string) {
+  return has(blob, "refund", "defective", "warranty", "smartphone", "वापसी", "खराब");
+}
+
+function isBareRtiQuestion(blob: string) {
+  return has(blob, "what is rti", "explain the act", "meaning of rti", "what is the rti");
+}
+
 function domainFromBlob(blob: string): Domain {
   if (isPoliceAssault(blob)) return "police_accountability";
-  if (has(blob, "landlord", "tenant", "evict", "vacate", "मकान मालिक", "किरायेदार", "खाली कर")) return "tenancy";
-  if (has(blob, "refund", "defective", "shop", "warranty", "smartphone", "वापसी", "खराब", "दुकान")) return "consumer";
-  if (detectBenefit(blob) === "pf") return "welfare_records";
   if (isWorkplace(blob)) return "workplace";
-  if (detectBenefit(blob) || has(blob, "rti", "application has been pending", "public authority", "ration", "scholarship")) {
+  if (isTenancy(blob)) return "tenancy";
+  if (isConsumer(blob)) return "consumer";
+  if (detectBenefit(blob) === "pf") return "welfare_records";
+  if (detectBenefit(blob) || has(blob, "application has been pending", "public authority", "file noting", "certified cop")) {
     return "welfare_records";
   }
+  if (has(blob, "rti") && !isBareRtiQuestion(blob)) return "welfare_records";
   return "unsupported";
 }
 
 export function interpret(text: string, slots: Record<string, string> = {}, notice = ""): Interpretation {
-  const blob = `${text}\n${notice}\n` + Object.entries(slots).map(([k, v]) => `${k}=${v}`).join(" ");
-  let domain = domainFromBlob(blob);
-  let benefit = detectBenefit(blob);
-  let level = detectLevel(blob, benefit);
+  const citizen = `${text}\n${notice}`;
+  const blob = `${citizen}\n` + Object.entries(slots).map(([k, v]) => `${k}=${v}`).join(" ");
+  let domain = domainFromBlob(citizen);
+  let benefit = detectBenefit(citizen) || slots.benefit || null;
+  let level = detectLevel(citizen, benefit);
   if (slots.scheme_level === "union" || slots.scheme_level === "state") level = slots.scheme_level;
   if (isPoliceAssault(blob)) domain = "police_accountability";
   if (isWorkplace(blob) && domain !== "consumer" && domain !== "tenancy" && domain !== "police_accountability" && benefit !== "pf") {
@@ -326,8 +349,8 @@ export function applyDiscriminator(slots: Record<string, string>, key: string | 
     else if (low.startsWith("1") || has(low, "heard nothing", "still pending", "no update", "applied")) updated.pending_kind = "pending_application";
     else if (low.startsWith("2") || has(low, "approved", "selected", "money", "disburs")) updated.pending_kind = "disbursement_failed";
     else if (low.startsWith("3") || has(low, "kyc", "document", "verification")) updated.pending_kind = "verification_gap";
-    else if (low.startsWith("4") || has(low, "eligible", "qualify", "eligibility")) updated.pending_kind = "eligibility_question";
-    else updated.pending_kind = raw;
+    else if (low.startsWith("4") || has(low, "eligible", "qualify", "eligibility", "पात्र")) updated.pending_kind = "eligibility_question";
+    else if (key !== "pending_kind") updated.pending_kind = raw;
     if (key === "pending_kind") return updated;
   }
   if (key === "scheme_level") {

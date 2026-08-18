@@ -12,7 +12,7 @@
       "union_hint": "PDS / ration cards are State Food & Civil Supplies matters. Do not use rtionline.gov.in."
     },
     "pension": {
-      "department_state": "education-state",
+      "department_state": "social-welfare-state",
       "department_union": "central-generic",
       "union_hint": "NSAP is Central; many old-age pensions are State. Ask scheme_level."
     },

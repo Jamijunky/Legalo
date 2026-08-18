@@ -92,3 +92,12 @@ def test_pdf_accepts_rupee_and_dashes():
     blob = html_to_pdf("Fee is ₹10 — Central rules.", "RTI application")
     assert blob.startswith(b"%PDF")
     assert len(blob) > 200
+
+
+def test_citizen_stress_suite():
+    import runpy
+    from pathlib import Path
+
+    script = Path(__file__).resolve().parents[3] / "scripts" / "stress_router.py"
+    ns = runpy.run_path(str(script))
+    assert ns["main"]() == 0

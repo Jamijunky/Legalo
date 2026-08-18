@@ -1,0 +1,681 @@
+[
+  {
+    "id": "w-sch-vague-en",
+    "persona": "Student, Lucknow",
+    "field": "welfare · scholarship",
+    "query": "My scholarship has been pending for four months.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "pending_application",
+    "expect_benefit": "scholarship",
+    "expect_asks_any": ["pending_kind", "scheme_level"],
+    "answers": { "pending_kind": "pending_application", "scheme_level": "state", "default": "Asha Devi" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-sch-nsp-pending",
+    "persona": "NSP applicant",
+    "field": "welfare · scholarship",
+    "query": "My National Scholarship Portal application on NSP has been pending since January.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "pending_application",
+    "expect_benefit": "scholarship",
+    "expect_level": "union",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true,
+    "must_mention": ["central"]
+  },
+  {
+    "id": "w-sch-disburse",
+    "persona": "Selected, unpaid",
+    "field": "welfare · scholarship",
+    "query": "I was selected for a scholarship three months ago but the money has not come. DBT shows nothing.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "disbursement_failed",
+    "answers": { "scheme_level": "union" },
+    "expect_draft": true,
+    "must_mention": ["payment"]
+  },
+  {
+    "id": "w-sch-kyc",
+    "persona": "Document loop",
+    "field": "welfare · scholarship",
+    "query": "The scholarship office says my KYC and Aadhaar pending documents are still incomplete.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "verification_gap",
+    "answers": { "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-sch-eligible",
+    "persona": "Wants a yes/no",
+    "field": "welfare · scholarship",
+    "query": "Am I eligible for a scholarship?",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "eligibility_question",
+    "expect_draft": true,
+    "must_mention": ["unsourced"]
+  },
+  {
+    "id": "w-sch-qualify-hi",
+    "persona": "Hindi eligibility",
+    "field": "welfare · scholarship",
+    "query": "क्या मैं छात्रवृत्ति के लिए पात्र हूँ?",
+    "language": "hi",
+    "expect_intent": "rti",
+    "expect_situation": "eligibility_question",
+    "expect_draft": true
+  },
+  {
+    "id": "w-sch-explicit-copies",
+    "persona": "Knows it is RTI",
+    "field": "welfare · scholarship",
+    "query": "I want certified copies of file notings and the current status of my scholarship application in Uttar Pradesh.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "explicit_information_request",
+    "answers": { "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-sch-state-named",
+    "persona": "State scheme",
+    "field": "welfare · scholarship",
+    "query": "My state scholarship from the UP government has been stuck with no update for six months.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "pending_application",
+    "answers": { "pending_kind": "pending_application", "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-sch-pm-central",
+    "persona": "PM scheme wording",
+    "field": "welfare · scholarship",
+    "query": "My PM scholarship under a central scheme was sanctioned but payment not credited.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "disbursement_failed",
+    "expect_level": "union",
+    "expect_draft": true
+  },
+  {
+    "id": "w-sch-hi-pending",
+    "persona": "Hindi student",
+    "field": "welfare · scholarship",
+    "query": "मेरी छात्रवृत्ति चार महीने से लंबित है।",
+    "language": "hi",
+    "expect_intent": "rti",
+    "expect_asks_any": ["pending_kind", "scheme_level"],
+    "answers": { "pending_kind": "pending_application", "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-ration-prayagraj",
+    "persona": "PDS, Prayagraj",
+    "field": "welfare · ration",
+    "query": "My ration card application has been pending for four months in Prayagraj. I want the current status and certified copies of file notings and reasons for delay.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "explicit_information_request",
+    "expect_benefit": "ration",
+    "expect_level": "state",
+    "expect_draft": true,
+    "must_mention": ["state"]
+  },
+  {
+    "id": "w-ration-hi",
+    "persona": "Hindi PDS",
+    "field": "welfare · ration",
+    "query": "प्रयागराज में मेरा राशन कार्ड का आवेदन चार महीने से लंबित है। मुझे वर्तमान स्थिति और फ़ाइल नोटिंग की प्रमाणित प्रतियाँ चाहिए।",
+    "language": "hi",
+    "expect_intent": "rti",
+    "expect_benefit": "ration",
+    "expect_draft": true
+  },
+  {
+    "id": "w-ration-mumbai",
+    "persona": "Maharashtra PDS",
+    "field": "welfare · ration",
+    "query": "Ration card in Mumbai has been pending, no update from food and civil supplies.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "ration",
+    "expect_level": "state",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-ration-delhi",
+    "persona": "Delhi PDS",
+    "field": "welfare · ration",
+    "query": "My Delhi ration card / PDS file is stuck. I need file notings.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "explicit_information_request",
+    "expect_benefit": "ration",
+    "expect_draft": true
+  },
+  {
+    "id": "w-ration-nfsa",
+    "persona": "NFSA wording",
+    "field": "welfare · ration",
+    "query": "NFSA ration application pending in Patna, Bihar. Heard nothing.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "ration",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-pension-pending",
+    "persona": "Old-age pension",
+    "field": "welfare · pension",
+    "query": "My old age pension has been pending for four months in Jaipur.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "pension",
+    "answers": { "pending_kind": "pending_application", "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-pension-hi",
+    "persona": "Hindi pension",
+    "field": "welfare · pension",
+    "query": "मेरी पेंशन चार महीने से अटकी है, कोई खबर नहीं।",
+    "language": "hi",
+    "expect_intent": "rti",
+    "expect_benefit": "pension",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-pension-disburse",
+    "persona": "Sanctioned pension",
+    "field": "welfare · pension",
+    "query": "My pension was sanctioned but the amount not credited to my account.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "disbursement_failed",
+    "expect_benefit": "pension",
+    "expect_draft": true
+  },
+  {
+    "id": "w-pf-epfo",
+    "persona": "EPFO member",
+    "field": "welfare · PF",
+    "query": "My EPF withdrawal from EPFO has been pending for three months. UAN is already activated.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "pf",
+    "expect_level": "union",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true,
+    "must_mention": ["epfo"]
+  },
+  {
+    "id": "w-pf-employer-deposit",
+    "persona": "Missing PF credits",
+    "field": "welfare · PF",
+    "query": "My employer is not depositing PF contributions. I want EPFO records of my UAN account.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "pf",
+    "expect_level": "union",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-pf-not-labour",
+    "persona": "PF vs wage trap",
+    "field": "welfare · PF",
+    "query": "Provident fund claim pending with EPFO, not my salary.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "pf",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-generic-pending",
+    "persona": "No scheme named",
+    "field": "welfare · unspecified",
+    "query": "My application has been pending for four months and I have heard nothing from the public authority.",
+    "language": "en",
+    "expect_intent": "rti",
+    "answers": { "pending_kind": "pending_application" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-bengaluru-sch",
+    "persona": "Karnataka student",
+    "field": "welfare · scholarship",
+    "query": "Scholarship in Bengaluru, Karnataka is pending. No update.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "scholarship",
+    "answers": { "pending_kind": "pending_application", "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "w-chennai-sch",
+    "persona": "Tamil Nadu student",
+    "field": "welfare · scholarship",
+    "query": "My scholarship file in Chennai has been pending, they ask for documents again and again.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_situation": "verification_gap",
+    "answers": { "scheme_level": "state" },
+    "expect_draft": true
+  },
+  {
+    "id": "c-phone-lucknow",
+    "persona": "Phone buyer",
+    "field": "consumer",
+    "query": "A shop in Lucknow refused refund for a defective smartphone I bought last month for 18000 rupees. They said no returns after 7 days.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_situation": "defect_refund_refused",
+    "expect_draft": true,
+    "must_mention": ["e-jagriti"]
+  },
+  {
+    "id": "c-tv-warranty",
+    "persona": "TV warranty",
+    "field": "consumer",
+    "query": "Defective LED TV, shop refused warranty replacement in Pune. Paid 42000 rupees.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "c-hi-shop",
+    "persona": "Hindi buyer",
+    "field": "consumer",
+    "query": "दुकान ने खराब फ़ोन वापसी से मना कर दिया।",
+    "language": "hi",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "c-online-seller",
+    "persona": "Online order",
+    "field": "consumer",
+    "query": "Online seller shipped a defective mixer grinder and refused refund. Order value 3500 rupees.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "c-wrong-forum-rti",
+    "persona": "Wants ministry RTI",
+    "field": "consumer",
+    "query": "Shop refused refund for a defective fridge. I want to file an RTI with Consumer Affairs ministry.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true,
+    "must_mention": ["rti"]
+  },
+  {
+    "id": "c-small-amount",
+    "persona": "Cheap earphones",
+    "field": "consumer",
+    "query": "Shop sold defective earphones for 499 rupees and refused refund.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "c-large-amount",
+    "persona": "Laptop 1.2 lakh",
+    "field": "consumer",
+    "query": "Defective laptop from a Hyderabad shop, paid 120000 rupees, warranty refused, no refund.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "c-service-salon",
+    "persona": "Service deficiency",
+    "field": "consumer",
+    "query": "Salon in Delhi charged 8000 rupees for a treatment that damaged my hair and refused refund.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "c-kolkata-shop",
+    "persona": "West Bengal",
+    "field": "consumer",
+    "query": "Kolkata shop sold a defective washing machine and said no returns.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "t-electric-vacate",
+    "persona": "Prayagraj tenant",
+    "field": "tenancy",
+    "query": "Please read this. My landlord cut the electricity yesterday and says I must vacate in two days. The house is in Prayagraj, Uttar Pradesh.",
+    "language": "en",
+    "expect_intent": "tenant",
+    "expect_situation": "informal_eviction",
+    "expect_draft": true,
+    "must_mention": ["state law"]
+  },
+  {
+    "id": "t-electric-only",
+    "persona": "Supply cut",
+    "field": "tenancy",
+    "query": "My landlord cut the electricity and water in the rented flat in Noida.",
+    "language": "en",
+    "expect_intent": "tenant",
+    "expect_situation": "essential_supply_cut",
+    "expect_draft": true
+  },
+  {
+    "id": "t-vacate-only",
+    "persona": "Two-day notice",
+    "field": "tenancy",
+    "query": "Landlord says I must vacate the house in two days. I am a tenant in Jaipur.",
+    "language": "en",
+    "expect_intent": "tenant",
+    "expect_situation": "informal_eviction",
+    "expect_draft": true
+  },
+  {
+    "id": "t-hi-landlord",
+    "persona": "Hindi tenant",
+    "field": "tenancy",
+    "query": "मकान मालिक ने बिजली काट दी और कहा दो दिन में घर खाली करो।",
+    "language": "hi",
+    "expect_intent": "tenant",
+    "expect_draft": true
+  },
+  {
+    "id": "t-mumbai-evict",
+    "persona": "Mumbai tenant",
+    "field": "tenancy",
+    "query": "My landlord in Mumbai wants me to vacate immediately without any court order.",
+    "language": "en",
+    "expect_intent": "tenant",
+    "expect_draft": true
+  },
+  {
+    "id": "t-wrong-forum-consumer",
+    "persona": "Thinks consumer forum",
+    "field": "tenancy",
+    "query": "Landlord cut electricity. Can I complain to the consumer commission about my landlord?",
+    "language": "en",
+    "expect_intent": "tenant",
+    "expect_draft": true
+  },
+  {
+    "id": "t-water-cut",
+    "persona": "Water only",
+    "field": "tenancy",
+    "query": "Tenant in Bengaluru: landlord threatened to evict me and already cut water.",
+    "language": "en",
+    "expect_intent": "tenant",
+    "expect_draft": true
+  },
+  {
+    "id": "p-slap-en",
+    "persona": "Police slap",
+    "field": "police",
+    "query": "a police officer slapped me.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_situation": "police_assault",
+    "expect_draft": true,
+    "must_mention": ["hrcnet"],
+    "must_not": ["323"]
+  },
+  {
+    "id": "p-beat-thana",
+    "persona": "Station beating",
+    "field": "police",
+    "query": "Constable at the thana beat me with a lathi last night in Lucknow.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_situation": "police_assault",
+    "expect_draft": true,
+    "must_not": ["323"]
+  },
+  {
+    "id": "p-hi-slap",
+    "persona": "Hindi assault",
+    "field": "police",
+    "query": "पुलिस अधिकारी ने थप्पड़ मारा।",
+    "language": "hi",
+    "expect_intent": "nhrc",
+    "expect_draft": true,
+    "must_not": ["323"]
+  },
+  {
+    "id": "p-custody",
+    "persona": "Custody",
+    "field": "police",
+    "query": "Police kept me in custody overnight and punched me. I want to complain.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_draft": true
+  },
+  {
+    "id": "p-inspector-hit",
+    "persona": "Named rank",
+    "field": "police",
+    "query": "An inspector hit me at the chowki in Patna.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_draft": true
+  },
+  {
+    "id": "p-wants-rti",
+    "persona": "Wrong forum RTI",
+    "field": "police",
+    "query": "A police officer slapped me. I want to file an RTI about it.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_draft": true
+  },
+  {
+    "id": "p-wants-fir-template",
+    "persona": "Wants IPC sections",
+    "field": "police",
+    "query": "Police officer slapped me, please draft FIR with IPC sections.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_draft": true,
+    "must_not": ["323"]
+  },
+  {
+    "id": "p-hi-beat",
+    "persona": "Hindi beating",
+    "field": "police",
+    "query": "थाने में पुलिस ने पीटा।",
+    "language": "hi",
+    "expect_intent": "nhrc",
+    "expect_draft": true
+  },
+  {
+    "id": "l-salary-3mo",
+    "persona": "Unpaid wages",
+    "field": "workplace",
+    "query": "My employer has not paid my salary for three months.",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_situation": "unpaid_wages",
+    "expect_draft": true,
+    "must_mention": ["labour.gov.in"],
+    "must_not": ["ida ", "33c"]
+  },
+  {
+    "id": "l-hi-wages",
+    "persona": "Hindi wages",
+    "field": "workplace",
+    "query": "नियोक्ता ने तीन महीने वेतन नहीं दिया।",
+    "language": "hi",
+    "expect_intent": "labour",
+    "expect_draft": true
+  },
+  {
+    "id": "l-fired",
+    "persona": "Termination",
+    "field": "workplace",
+    "query": "My employer fired me yesterday and still has not paid my wages.",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_draft": true
+  },
+  {
+    "id": "l-wrong-consumer",
+    "persona": "Thinks consumer",
+    "field": "workplace",
+    "query": "Employer unpaid my salary. Can I go to consumer court?",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_draft": true
+  },
+  {
+    "id": "l-naukri-salary",
+    "persona": "Naukri wording",
+    "field": "workplace",
+    "query": "Naukri wali company has not paid salary for two months in Gurgaon.",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_draft": true
+  },
+  {
+    "id": "l-retrench",
+    "persona": "Retrenchment",
+    "field": "workplace",
+    "query": "They retrenched me from the factory in Pune and wages are unpaid.",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_draft": true
+  },
+  {
+    "id": "x-heart-surgery",
+    "persona": "Medical how-to",
+    "field": "unsupported",
+    "query": "How do I perform heart surgery at home?",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "x-divorce",
+    "persona": "Family law",
+    "field": "unsupported",
+    "query": "I want a divorce from my husband in Delhi. What sections apply?",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "x-visa",
+    "persona": "Immigration",
+    "field": "unsupported",
+    "query": "How do I get a Schengen visa from India?",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "x-property-partition",
+    "persona": "Property",
+    "field": "unsupported",
+    "query": "I want to partition ancestral property among brothers in Bihar.",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "x-stolen-phone",
+    "persona": "Theft",
+    "field": "unsupported",
+    "query": "Someone stole my phone on the bus. What should I do?",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "x-police-inaction",
+    "persona": "Police inaction, no assault",
+    "field": "unsupported",
+    "query": "Police station is not registering my complaint about a neighbour dispute.",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "trap-shop-salary",
+    "persona": "Shop + wages",
+    "field": "workplace",
+    "query": "I work at a shop. My employer has not paid my salary for three months.",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_situation": "unpaid_wages",
+    "expect_draft": true
+  },
+  {
+    "id": "trap-what-is-rti",
+    "persona": "Curious about the Act",
+    "field": "unsupported",
+    "query": "What is RTI? Explain the Act to me.",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "trap-discom-cut",
+    "persona": "Utility, not landlord",
+    "field": "unsupported",
+    "query": "The electricity board / DISCOM disconnected my supply for unpaid bills. I am not a tenant.",
+    "language": "en",
+    "expect_intent": "unsupported",
+    "expect_draft": false
+  },
+  {
+    "id": "trap-hospital-bill",
+    "persona": "Private hospital",
+    "field": "consumer",
+    "query": "Private hospital overcharged me 85000 rupees and refused refund of extra tests.",
+    "language": "en",
+    "expect_intent": "consumer",
+    "expect_draft": true
+  },
+  {
+    "id": "trap-teacher-salary",
+    "persona": "Private school job",
+    "field": "workplace",
+    "query": "Private school employer unpaid my salary. I was terminated last week.",
+    "language": "en",
+    "expect_intent": "labour",
+    "expect_draft": true
+  },
+  {
+    "id": "mix-en-hi-ration",
+    "persona": "Code-switch",
+    "field": "welfare · ration",
+    "query": "Prayagraj ration card pending hai four months se, I want file notings.",
+    "language": "en",
+    "expect_intent": "rti",
+    "expect_benefit": "ration",
+    "expect_draft": true
+  },
+  {
+    "id": "mix-police-consumer",
+    "persona": "Two problems",
+    "field": "police",
+    "query": "A police officer slapped me yesterday after a shop refused refund for a defective phone.",
+    "language": "en",
+    "expect_intent": "nhrc",
+    "expect_draft": true
+  }
+]

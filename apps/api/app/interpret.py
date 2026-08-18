@@ -72,7 +72,14 @@ TABLE = _load_table()
 
 def _has(blob: str, *needles: str) -> bool:
     low = blob.lower()
-    return any(n.lower() in low for n in needles)
+    for n in needles:
+        nlow = n.lower()
+        if len(nlow) <= 3 and nlow.isascii() and nlow[-1].isalnum():
+            if re.search(rf"\b{re.escape(nlow)}\b", low):
+                return True
+        elif nlow in low:
+            return True
+    return False
 
 
 def detect_benefit(blob: str) -> str | None:
@@ -122,7 +129,7 @@ def detect_state(blob: str) -> str | None:
 
 
 def _pending_kind_from_text(blob: str) -> str | None:
-    if _has(blob, "am i eligible", "do i qualify", "eligibility", "क्या मैं पात्र", "पात्रता"):
+    if _has(blob, "am i eligible", "do i qualify", "eligibility", "क्या मैं पात्र", "पात्रता", "पात्र हूँ", "पात्र हूं"):
         return "eligibility_question"
     if _has(blob, "approved", "selected", "sanctioned", "money has not", "payment not", "disburs", "dbt", "amount not credit"):
         return "disbursement_failed"
@@ -179,18 +186,36 @@ def _is_workplace(blob: str) -> bool:
     )
 
 
+def _is_tenancy(blob: str) -> bool:
+    negated = _has(blob, "not a tenant", "not the tenant", "i am not a tenant")
+    landlordish = _has(blob, "landlord", "मकान मालिक", "evict", "vacate", "खाली कर", "किरायेदार")
+    if negated and not landlordish:
+        return False
+    return _has(blob, "landlord", "tenant", "evict", "vacate", "मकान मालिक", "किरायेदार", "खाली कर")
+
+
+def _is_consumer(blob: str) -> bool:
+    return _has(blob, "refund", "defective", "warranty", "smartphone", "वापसी", "खराब")
+
+
+def _is_bare_rti_question(blob: str) -> bool:
+    return _has(blob, "what is rti", "explain the act", "meaning of rti", "what is the rti")
+
+
 def _domain_from_blob(blob: str) -> Domain:
     if _is_police_assault(blob):
         return "police_accountability"
-    if _has(blob, "landlord", "tenant", "evict", "vacate", "मकान मालिक", "किरायेदार", "खाली कर"):
+    if _is_workplace(blob):
+        return "workplace"
+    if _is_tenancy(blob):
         return "tenancy"
-    if _has(blob, "refund", "defective", "shop", "warranty", "smartphone", "वापसी", "खराब", "दुकान"):
+    if _is_consumer(blob):
         return "consumer"
     if detect_benefit(blob) == "pf":
         return "welfare_records"
-    if _is_workplace(blob):
-        return "workplace"
-    if detect_benefit(blob) or _has(blob, "rti", "application has been pending", "public authority", "ration", "scholarship"):
+    if detect_benefit(blob) or _has(blob, "application has been pending", "public authority", "file noting", "certified cop"):
+        return "welfare_records"
+    if _has(blob, "rti") and not _is_bare_rti_question(blob):
         return "welfare_records"
     if _has(blob, "surgery", "hack", "bomb"):
         return "unsupported"
@@ -199,7 +224,8 @@ def _domain_from_blob(blob: str) -> Domain:
 
 def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") -> Interpretation:
     slots = dict(slots or {})
-    blob = f"{text}\n{notice}\n" + " ".join(f"{k}={v}" for k, v in slots.items())
+    citizen = f"{text}\n{notice}"
+    blob = f"{citizen}\n" + " ".join(f"{k}={v}" for k, v in slots.items())
 
     llm = generate_json(
         "You interpret Indian civic situations. Do not give eligibility opinions. "
@@ -210,17 +236,18 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         "police_accountability = alleged assault or illegal force by a police officer. "
         "unsupported = medical how-to or unrelated. Do not treat police assault as unsupported."
         "JSON keys: domain, situation_type, benefit, government_level, evidence (array of short quotes).",
-        blob[:4000],
+        citizen[:4000],
     )
 
-    domain = _domain_from_blob(blob)
-    benefit = detect_benefit(blob)
-    level = detect_level(blob, benefit)
+    domain = _domain_from_blob(citizen)
+    benefit = detect_benefit(citizen) or slots.get("benefit")
+    level = detect_level(citizen, benefit)
     if slots.get("scheme_level") in ("union", "state"):
         level = slots["scheme_level"]  # type: ignore[assignment]
     source = "rules"
 
-    if llm and llm.get("domain") in {
+    # LLM may fill gaps the keyword table cannot. It must not override a matched route.
+    if domain == "unsupported" and llm and llm.get("domain") in {
         "welfare_records",
         "consumer",
         "tenancy",
@@ -230,18 +257,19 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
     }:
         domain = llm["domain"]
         source = "llm+rules"
-        benefit = llm.get("benefit") or benefit
+        if not benefit:
+            benefit = llm.get("benefit") or benefit
         if llm.get("government_level") in {"union", "state", "unknown"}:
             level = llm["government_level"]
 
     if _is_police_assault(blob):
         domain = "police_accountability"
         source = "rules" if source == "rules" else "llm+rules"
-    if _is_workplace(blob) and domain not in {"consumer", "tenancy", "police_accountability"} and detect_benefit(blob) != "pf":
+    if _is_workplace(blob) and domain not in {"tenancy", "police_accountability"} and detect_benefit(blob) != "pf":
         domain = "workplace"
 
     situation = slots.get("pending_kind") or _pending_kind_from_text(blob)
-    if llm and llm.get("situation_type") in TABLE["pathways"] and not slots.get("pending_kind"):
+    if domain == "unsupported" and llm and llm.get("situation_type") in TABLE["pathways"] and not slots.get("pending_kind"):
         situation = llm["situation_type"]
 
     evidence: list[str] = []
@@ -440,9 +468,9 @@ def apply_discriminator(slots: dict[str, str], key: str | None, answer: str) -> 
             updated["pending_kind"] = "disbursement_failed"
         elif low.startswith("3") or _has(low, "kyc", "document", "verification"):
             updated["pending_kind"] = "verification_gap"
-        elif low.startswith("4") or _has(low, "eligible", "qualify", "eligibility"):
+        elif low.startswith("4") or _has(low, "eligible", "qualify", "eligibility", "पात्र"):
             updated["pending_kind"] = "eligibility_question"
-        else:
+        elif key != "pending_kind":
             updated["pending_kind"] = raw
         if key == "pending_kind":
             return updated
