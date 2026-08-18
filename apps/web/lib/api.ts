@@ -191,11 +191,17 @@ export function pdfUrl(caseId: string) {
 }
 
 export function downloadDraft(draft: DraftBody) {
-  const blob = new Blob([draft.plain], { type: "text/plain;charset=utf-8" });
+  const body = (draft.html.match(/<body[^>]*>([\s\S]*)<\/body>/i)?.[1] || draft.html).replace(
+    /<style[\s\S]*?<\/style>/gi,
+    ""
+  );
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${draft.title}</title>
+    <style>body{font-family:Georgia,serif;max-width:720px;margin:32px auto;line-height:1.45}</style></head><body>${body}</body></html>`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `legalo-${draft.template_id}.txt`;
+  a.download = `legalo-${draft.template_id}.html`;
   a.click();
   URL.revokeObjectURL(url);
 }

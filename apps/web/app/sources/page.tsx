@@ -19,6 +19,7 @@ export default function SourcesPage() {
       <header className="topbar">
         <div className="brand">
           <Link href="/">Legalo</Link>
+          <span className="mark">civic docket</span>
         </div>
         <Link href="/">← Home</Link>
       </header>
@@ -30,27 +31,25 @@ export default function SourcesPage() {
         </p>
       </section>
       {err && <p className="err">{err}</p>}
-      <div className="card" style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+      <div className="card scroll">
+        <table className="ledger">
           <thead>
             <tr>
               {["Title", "Publisher", "Type", "Published", "Effective", "Retrieved", "URL"].map((h) => (
-                <th key={h} style={{ textAlign: "left", borderBottom: "1px solid #d7cbb8", padding: 8 }}>
-                  {h}
-                </th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id}>
-                <td style={{ padding: 8, verticalAlign: "top" }}>{r.title}</td>
-                <td style={{ padding: 8, verticalAlign: "top" }}>{r.publisher}</td>
-                <td style={{ padding: 8, verticalAlign: "top" }}>{r.doc_type}</td>
-                <td style={{ padding: 8, verticalAlign: "top" }}>{r.published_on}</td>
-                <td style={{ padding: 8, verticalAlign: "top" }}>{r.effective_on}</td>
-                <td style={{ padding: 8, verticalAlign: "top" }}>{r.retrieved_on}</td>
-                <td style={{ padding: 8, verticalAlign: "top" }}>
+                <td>{r.title}</td>
+                <td>{r.publisher}</td>
+                <td>{r.doc_type}</td>
+                <td>{r.published_on}</td>
+                <td>{r.effective_on}</td>
+                <td>{r.retrieved_on}</td>
+                <td>
                   <a href={r.source_url} target="_blank" rel="noreferrer">
                     source
                   </a>

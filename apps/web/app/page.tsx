@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CaseResponse,
   createCase,
@@ -28,6 +28,68 @@ const DEMOS = {
 };
 
 const STEPS = ["understand", "rights", "path", "draft"] as const;
+type Pane = (typeof STEPS)[number];
+
+const HIDDEN_FIELDS = new Set(["retrieved_on", "date", "delivery", "legal_paragraph", "prior_contact"]);
+
+const FIELD_LABEL: Record<string, string> = {
+  complainant_name: "Your name",
+  complainant_contact: "Phone / email / address",
+  complainant_address: "Your address",
+  applicant_name: "Your name",
+  applicant_address: "Postal address",
+  applicant_contact: "Phone or email",
+  state: "State / UT",
+  facts: "What happened, in your words",
+  place_time: "Place and date / time",
+  officer_detail: "Officer / station if known",
+  relief: "What you want done",
+  public_authority: "Public authority / department",
+  information_sought: "Information / copies sought",
+  opposite_party: "Shop / seller",
+  goods_service: "Goods or service",
+  amount: "Amount paid (₹)",
+  defect: "What went wrong",
+  tenant_name: "Your name",
+  landlord_name: "Landlord",
+  premises: "Address of the house",
+  issue: "What happened",
+  employer_name: "Employer",
+  worker_name: "Your name",
+};
+
+const CHOICE_LABEL: Record<string, { en: string; hi: string }> = {
+  pending_application: { en: "I applied. Silence. No decision.", hi: "आवेदन किया, कोई खबर नहीं।" },
+  disbursement_failed: { en: "Told selected / approved. Money never came.", hi: "चयन/मंज़ूरी हुई, पैसे नहीं आए।" },
+  verification_gap: { en: "They say documents or KYC are still pending.", hi: "दस्तावेज़ या KYC बाकी बता रहे हैं।" },
+  eligibility_question: { en: "I mainly want to know if I qualify.", hi: "मुख्यतः पात्रता पूछ रहा/रही हूँ।" },
+  union: { en: "Central / NSP scheme", hi: "केंद्रीय / NSP योजना" },
+  state: { en: "State government scheme", hi: "राज्य सरकार की योजना" },
+  unknown: { en: "I am not sure", hi: "पता नहीं" },
+};
+
+function paperHtml(html: string) {
+  const body = html.match(/<body[^>]*>([\s\S]*)<\/body>/i)?.[1] || html;
+  return body.replace(/<style[\s\S]*?<\/style>/gi, "");
+}
+
+function pretty(s: string) {
+  return s.replaceAll("_", " ");
+}
+
+function splitRights(text: string) {
+  return text
+    .split(/(?<=\.)\s+(?=[A-Z“"I])|(?<=।)\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function notChips(text: string) {
+  return text
+    .split(/\.\s+(?=[A-Z“"N])|।\s+/)
+    .map((s) => s.replace(/\.+$/, "").trim())
+    .filter((s) => s.length > 6);
+}
 
 export default function HomePage() {
   const [ui, setUi] = useState<UiLocale>("en");
@@ -38,12 +100,19 @@ export default function HomePage() {
   const [err, setErr] = useState<string | null>(null);
   const [cas, setCas] = useState<CaseResponse | null>(null);
   const [answer, setAnswer] = useState("");
-  const [editKey, setEditKey] = useState("");
-  const [editVal, setEditVal] = useState("");
+  const [pane, setPane] = useState<Pane>("understand");
+  const [form, setForm] = useState<Record<string, string>>({});
 
   const t = copy[ui];
-  const stepIndex = useMemo(() => {
-    if (!cas) return -1;
+
+  useEffect(() => {
+    if (!cas) return;
+    setForm(cas.draft?.fields || {});
+    setPane(cas.question ? "understand" : "rights");
+  }, [cas?.case_id]);
+
+  const unlocked = useMemo(() => {
+    if (!cas) return 0;
     if (cas.question) return 0;
     if (cas.draft) return 3;
     if (cas.path.length) return 2;
@@ -66,6 +135,8 @@ export default function HomePage() {
       let next = created;
       if (file) next = await uploadNotice(created.case_id, file);
       setCas(next);
+      setForm(next.draft?.fields || {});
+      setPane(next.question ? "understand" : "rights");
       setAnswer("");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not start");
@@ -74,13 +145,17 @@ export default function HomePage() {
     }
   }
 
-  async function reply() {
-    if (!cas || !answer.trim()) return;
+  async function reply(value?: string) {
+    const msg = (value ?? answer).trim();
+    if (!cas || !msg) return;
     setBusy(true);
     setErr(null);
     try {
-      setCas(await sendMessage(cas.case_id, answer, language));
+      const next = await sendMessage(cas.case_id, msg, language);
+      setCas(next);
+      setForm(next.draft?.fields || {});
       setAnswer("");
+      setPane(next.question ? "understand" : "rights");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not continue");
     } finally {
@@ -88,13 +163,13 @@ export default function HomePage() {
     }
   }
 
-  async function saveField() {
-    if (!cas || !editKey) return;
+  async function stampDraft() {
+    if (!cas) return;
     setBusy(true);
     try {
-      setCas(await patchDraft(cas.case_id, { [editKey]: editVal }));
-      setEditKey("");
-      setEditVal("");
+      const next = await patchDraft(cas.case_id, form);
+      setCas(next);
+      setForm(next.draft?.fields || form);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not update draft");
     } finally {
@@ -102,11 +177,15 @@ export default function HomePage() {
     }
   }
 
+  const interp = cas?.interpretation;
+  const citizenFields = Object.keys(form).filter((k) => !HIDDEN_FIELDS.has(k));
+
   return (
     <div className="wrap">
       <header className="topbar">
         <div className="brand">
           <Link href="/">{t.brand}</Link>
+          <span className="mark">civic docket</span>
         </div>
         <div className="row">
           <label>
@@ -133,57 +212,47 @@ export default function HomePage() {
       {!cas && (
         <>
           <section className="hero">
+            <p className="kicker">{t.kicker}</p>
             <h1 className="serif">{t.tagline}</h1>
             <p>{t.blurb}</p>
             <p className="note">{t.freshness}</p>
           </section>
-          <section className="card">
+          <section className="card intake">
             <h2>{t.start}</h2>
             <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={t.placeholder} />
             <p className="note">{t.orUpload}</p>
-            <input
-              type="file"
-              accept=".pdf,.txt,image/*"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
+            <input type="file" accept=".pdf,.txt,image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             <div className="row" style={{ marginTop: 12 }}>
               <button className="primary" disabled={busy} onClick={() => start()}>
-                {t.continue}
+                {t.routeIt}
               </button>
             </div>
             {err && <p className="err">{err}</p>}
             <h3 style={{ marginTop: 22 }}>{t.demos}</h3>
             <div className="demos">
-              <button className="demo" onClick={() => start(DEMOS.scholarship)}>
-                <strong>{t.demoRti}</strong>
-                <span className="note">{t.demoRtiHint}</span>
-              </button>
-              <button className="demo" onClick={() => start(DEMOS.eligibility)}>
-                <strong>{t.demoElig}</strong>
-                <span className="note">{t.demoEligHint}</span>
-              </button>
-              <button className="demo" onClick={() => start(DEMOS.police)}>
-                <strong>{t.demoPolice}</strong>
-                <span className="note">{t.demoPoliceHint}</span>
-              </button>
-              <button className="demo" onClick={() => start(DEMOS.rti)}>
-                <strong>{t.demoRation}</strong>
-                <span className="note">{t.demoRationHint}</span>
-              </button>
-              <button className="demo" onClick={() => start(DEMOS.rtiHi, "hi")}>
+              {(
+                [
+                  ["scholarship", t.demoRti, t.demoRtiHint],
+                  ["eligibility", t.demoElig, t.demoEligHint],
+                  ["police", t.demoPolice, t.demoPoliceHint],
+                  ["rti", t.demoRation, t.demoRationHint],
+                  ["consumer", t.demoConsumer, t.demoConsumerHint],
+                  ["workplace", t.demoWork, t.demoWorkHint],
+                ] as const
+              ).map(([key, title, hint]) => (
+                <button key={key} className="demo" type="button" disabled={busy} onClick={() => start(DEMOS[key])}>
+                  <strong>{title}</strong>
+                  <span className="note">{hint}</span>
+                </button>
+              ))}
+              <button className="demo" type="button" disabled={busy} onClick={() => start(DEMOS.rtiHi, "hi")}>
                 <strong>{t.demoHi}</strong>
                 <span className="note">{t.demoHiHint}</span>
               </button>
-              <button className="demo" onClick={() => start(DEMOS.consumer)}>
-                <strong>{t.demoConsumer}</strong>
-                <span className="note">{t.demoConsumerHint}</span>
-              </button>
-              <button className="demo" onClick={() => start(DEMOS.workplace)}>
-                <strong>{t.demoWork}</strong>
-                <span className="note">{t.demoWorkHint}</span>
-              </button>
               <button
                 className="demo"
+                type="button"
+                disabled={busy}
                 onClick={async () => {
                   const blob = new Blob(
                     [
@@ -197,8 +266,13 @@ export default function HomePage() {
                   setBusy(true);
                   try {
                     const created = await createCase(DEMOS.notice, language, ui);
-                    const f = new File([blob], "eviction_notice.txt", { type: "text/plain" });
-                    setCas(await uploadNotice(created.case_id, f));
+                    const next = await uploadNotice(
+                      created.case_id,
+                      new File([blob], "eviction_notice.txt", { type: "text/plain" })
+                    );
+                    setCas(next);
+                    setForm(next.draft?.fields || {});
+                    setPane(next.question ? "understand" : "rights");
                   } catch (e) {
                     setErr(e instanceof Error ? e.message : "Demo failed");
                   } finally {
@@ -207,7 +281,7 @@ export default function HomePage() {
                 }}
               >
                 <strong>{t.demoNotice}</strong>
-                <span className="note">Model Tenancy Act 2021 · state law may differ</span>
+                <span className="note">{t.demoNoticeHint}</span>
               </button>
             </div>
           </section>
@@ -215,197 +289,10 @@ export default function HomePage() {
       )}
 
       {cas && (
-        <>
-          {cas.routed_on_device && <div className="chip">{t.onDevice}</div>}
-          <div className="steps">
-            {STEPS.map((s, i) => (
-              <div key={s} className={i <= stepIndex ? "step on" : "step"}>
-                {t[s]}
-              </div>
-            ))}
-          </div>
-          {cas.banners.map((b) => (
-            <div key={b} className="banner">
-              {b}
-            </div>
-          ))}
-          {err && <p className="err">{err}</p>}
-
-          <section className="card">
-            {cas.interpretation && (
-              <div className="interp">
-                <h2>{t.interpret}</h2>
-                <p>
-                  <strong>{cas.interpretation.situation_type.replaceAll("_", " ")}</strong>
-                  {" · "}
-                  {t.action}: {cas.interpretation.primary_action.replaceAll("_", " ")}
-                  {cas.interpretation.benefit ? ` · ${cas.interpretation.benefit}` : ""}
-                  {cas.interpretation.government_level !== "unknown"
-                    ? ` · ${cas.interpretation.government_level}`
-                    : ""}
-                  {cas.interpretation.department_label ? ` · ${cas.interpretation.department_label}` : ""}
-                  <span className="note"> · confidence {Math.round(cas.interpretation.confidence * 100)}%</span>
-                </p>
-                <p>{cas.interpretation.why}</p>
-                {cas.interpretation.not_this && (
-                  <p className="note">
-                    {t.notThis}: {cas.interpretation.not_this}
-                  </p>
-                )}
-                {cas.interpretation.alternatives.length > 0 && (
-                  <ul className="note">
-                    {cas.interpretation.alternatives.map((a) => (
-                      <li key={a.situation_type}>
-                        If it were {a.situation_type.replaceAll("_", " ")}: {a.why}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-            {cas.restatement && (
-              <>
-                <h2>{t.understand}</h2>
-                <p>{cas.restatement}</p>
-              </>
-            )}
-
-            {cas.question && (
-              <div>
-                <p>{ui === "hi" ? cas.question.prompt_hi : cas.question.prompt_en}</p>
-                {cas.question.choices && cas.question.choices.length > 0 && (
-                  <div className="demos" style={{ marginBottom: 12 }}>
-                    {cas.question.choices.map((c) => (
-                      <button
-                        key={c}
-                        className="demo"
-                        disabled={busy}
-                        onClick={() => {
-                          setAnswer(c);
-                          void (async () => {
-                            if (!cas) return;
-                            setBusy(true);
-                            try {
-                              setCas(await sendMessage(cas.case_id, c, language));
-                              setAnswer("");
-                            } finally {
-                              setBusy(false);
-                            }
-                          })();
-                        }}
-                      >
-                        <strong>{c.replaceAll("_", " ")}</strong>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} />
-                <button className="primary" disabled={busy} onClick={reply}>
-                  {t.answer}
-                </button>
-              </div>
-            )}
-
-            {cas.explanation && (
-              <>
-                <h2>{t.rights}</h2>
-                <p>{cas.explanation}</p>
-              </>
-            )}
-
-            {cas.path.length > 0 && (
-              <>
-                <h2>{t.path}</h2>
-                <ol className="path">
-                  {cas.path.map((p) => (
-                    <li key={p.title}>
-                      <strong>{p.title}</strong>
-                      <div>{p.detail}</div>
-                      {p.deadline && <div className="note">Deadline: {p.deadline}</div>}
-                      {p.url && (
-                        <div>
-                          <a href={p.url} target="_blank" rel="noreferrer">
-                            {p.url}
-                          </a>
-                        </div>
-                      )}
-                      {p.verify && <div className="note">{p.verify}</div>}
-                    </li>
-                  ))}
-                </ol>
-              </>
-            )}
-          </section>
-
-          {cas.sources.length > 0 && (
-            <section className="card" style={{ marginTop: 14 }}>
-              <h2>{t.sources}</h2>
-              {cas.sources.map((s) => (
-                <div key={s.chunk_id} className="source">
-                  <strong>
-                    {s.title} · {t.section} {s.section}
-                  </strong>
-                  <div className="meta">
-                    {s.publisher}
-                    <br />
-                    {t.published} {s.published_on} · {t.effective} {s.effective_on} · {t.retrieved} {s.retrieved_on}
-                    {s.stale_procedural ? " · verify — procedural source is dated" : ""}
-                  </div>
-                  <a href={s.source_url} target="_blank" rel="noreferrer">
-                    {t.openSource}
-                  </a>
-                </div>
-              ))}
-            </section>
-          )}
-
-          {cas.draft && (
-            <section className="card" style={{ marginTop: 14 }}>
-              <h2>{t.draft}</h2>
-              <p className="note">
-                {t.why}: template <code>{cas.draft.template_id}</code>
-              </p>
-              <pre className="draft">{cas.draft.plain}</pre>
-              <div className="field">
-                <label>{t.editField}</label>
-                <select
-                  value={editKey}
-                  onChange={(e) => {
-                    setEditKey(e.target.value);
-                    setEditVal(cas.draft?.fields[e.target.value] || "");
-                  }}
-                >
-                  <option value="">—</option>
-                  {Object.keys(cas.draft.fields).map((k) => (
-                    <option key={k} value={k}>
-                      {k}
-                    </option>
-                  ))}
-                </select>
-                {editKey && (
-                  <>
-                    <input value={editVal} onChange={(e) => setEditVal(e.target.value)} />
-                    <button className="ghost" onClick={saveField} disabled={busy}>
-                      {t.continue}
-                    </button>
-                  </>
-                )}
-              </div>
-              {cas.ready_for_pdf && cas.draft && (
-                cas.routed_on_device ? (
-                  <button className="primary" type="button" onClick={() => downloadDraft(cas.draft!)}>
-                    {t.pdf}
-                  </button>
-                ) : (
-                  <a className="primary" href={pdfUrl(cas.case_id)} style={{ display: "inline-block", textDecoration: "none" }}>
-                    {t.pdf}
-                  </a>
-                )
-              )}
-            </section>
-          )}
-
-          <p>
+        <div className="docket">
+          <div className="docket-meta">
+            <span>File {cas.case_id}</span>
+            {cas.routed_on_device && <span>{t.onDevice}</span>}
             <button
               className="ghost"
               onClick={() => {
@@ -415,8 +302,165 @@ export default function HomePage() {
             >
               ← {t.start}
             </button>
-          </p>
-        </>
+          </div>
+
+          {interp && (
+            <section className="stamp-card">
+              <div className="stamp" aria-hidden>
+                <span>{Math.round(interp.confidence * 100)}%</span>
+                routed
+              </div>
+              <div>
+                <p className="kicker">{t.interpret}</p>
+                <h2 className="serif situation">{pretty(interp.situation_type)}</h2>
+                <p className="route-line">
+                  {pretty(interp.primary_action)}
+                  {interp.government_level !== "unknown" ? ` · ${interp.government_level}` : ""}
+                  {interp.department_label ? ` · ${interp.department_label}` : ""}
+                </p>
+                <p>{interp.why}</p>
+                <div className="not-row">
+                  {notChips(interp.not_this || "").map((bit) => (
+                    <span key={bit} className="not-chip">
+                      {bit}
+                    </span>
+                  ))}
+                </div>
+                {interp.alternatives.length > 0 && (
+                  <p className="note alts">
+                    {t.alts}: {interp.alternatives.map((a) => pretty(a.situation_type)).join(" · ")}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
+          <div className="steps" role="tablist">
+            {STEPS.map((s, i) => (
+              <button
+                key={s}
+                className={pane === s ? "step on" : "step"}
+                disabled={i > unlocked}
+                onClick={() => setPane(s)}
+              >
+                <span className="step-n">{i + 1}</span>
+                {t[s]}
+              </button>
+            ))}
+          </div>
+
+          {err && <p className="err">{err}</p>}
+
+          <section className="card pane">
+            {pane === "understand" && (
+              <>
+                <p className="quote">{cas.restatement}</p>
+                {cas.question ? (
+                  <div className="ask">
+                    <h3>{ui === "hi" ? cas.question.prompt_hi : cas.question.prompt_en}</h3>
+                    {cas.question.choices && cas.question.choices.length > 0 && (
+                      <div className="choice-grid">
+                        {cas.question.choices.map((c) => (
+                          <button key={c} className="choice" disabled={busy} onClick={() => void reply(c)}>
+                            {CHOICE_LABEL[c]?.[ui] || c.replaceAll("_", " ")}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder={t.orOwnWords} />
+                    <button className="primary" disabled={busy} onClick={() => void reply()}>
+                      {t.answer}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="note">{t.clickAhead}</p>
+                )}
+              </>
+            )}
+
+            {pane === "rights" && (
+              <>
+                <div className="rights">
+                  {splitRights(cas.explanation || t.noRightsYet).map((p) => (
+                    <p key={p.slice(0, 40)}>{p}</p>
+                  ))}
+                </div>
+                {cas.sources.length > 0 && (
+                  <div className="cites">
+                    {cas.sources.map((s) => (
+                      <a key={s.chunk_id} className="cite" href={s.source_url} target="_blank" rel="noreferrer">
+                        <strong>
+                          {s.title} {s.section}
+                        </strong>
+                        <span>
+                          {s.published_on} · {t.retrieved} {s.retrieved_on}
+                          {s.stale_procedural ? ` · ${t.verifyDated}` : ""}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {pane === "path" && (
+              <ol className="path">
+                {cas.path.map((p) => (
+                  <li key={p.title}>
+                    <strong>{p.title}</strong>
+                    <div>{p.detail}</div>
+                    {p.deadline && <div className="deadline">{p.deadline}</div>}
+                    {p.url && (
+                      <a href={p.url} target="_blank" rel="noreferrer">
+                        {p.url.replace(/^https?:\/\//, "")}
+                      </a>
+                    )}
+                    {p.verify && <div className="note">{p.verify}</div>}
+                  </li>
+                ))}
+              </ol>
+            )}
+
+            {pane === "draft" && cas.draft && (
+              <div className="draft-grid">
+                <div className="fill">
+                  <h3>{t.completeDraft}</h3>
+                  {citizenFields.map((k) => (
+                    <label key={k} className="field">
+                      {FIELD_LABEL[k] || k.replaceAll("_", " ")}
+                      <textarea
+                        className="mini"
+                        value={form[k] || ""}
+                        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+                      />
+                    </label>
+                  ))}
+                  <button className="primary" disabled={busy} onClick={() => void stampDraft()}>
+                    {t.stampDraft}
+                  </button>
+                </div>
+                <div>
+                  <article className="paper" dangerouslySetInnerHTML={{ __html: paperHtml(cas.draft.html) }} />
+                  <div className="row" style={{ marginTop: 12 }}>
+                    <button className="primary" type="button" onClick={() => downloadDraft(cas.draft!)}>
+                      {t.downloadDraft}
+                    </button>
+                    {!cas.routed_on_device && (
+                      <a className="ghost" href={pdfUrl(cas.case_id)} style={{ textDecoration: "none" }}>
+                        {t.pdf}
+                      </a>
+                    )}
+                    <button className="ghost" type="button" onClick={() => window.print()}>
+                      {t.print}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {pane === "draft" && !cas.draft && <p className="note">{t.noDraftYet}</p>}
+          </section>
+        </div>
       )}
 
       <footer>

@@ -288,11 +288,18 @@ def build_draft(intent: Intent, slots: dict[str, str], language: str) -> DraftBo
 
 
 def _html_to_plain(html: str) -> str:
-    text = html
-    for tag in ("</p>", "</div>", "</li>", "</h1>", "<br/>", "<br>"):
-        text = text.replace(tag, "\n")
     import re
 
+    text = re.sub(r"<style[\s\S]*?</style>", " ", html, flags=re.I)
+    text = re.sub(r"<head[\s\S]*?</head>", " ", text, flags=re.I)
+    for tag in ("</p>", "</div>", "</li>", "</h1>", "<br/>", "<br>"):
+        text = text.replace(tag, "\n")
     text = re.sub(r"<[^>]+>", "", text)
+    text = (
+        text.replace("&amp;", "&")
+        .replace("&nbsp;", " ")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+    )
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()

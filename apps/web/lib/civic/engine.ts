@@ -159,15 +159,24 @@ function fill(templateId: string, fields: Record<string, string>) {
 
 function htmlToPlain(html: string) {
   return html
-    .replace(/<\/(p|div|li|h1)>/g, "\n")
-    .replace(/<br\s*\/?>/g, "\n")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<head[\s\S]*?<\/head>/gi, " ")
+    .replace(/<\/(p|div|li|h1)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
 function buildPath(intent: Intent, slots: Record<string, string>): PathStep[] {
@@ -438,7 +447,7 @@ function respond(case_: Case): CaseResponse {
   }
 
   const sources = retrieve(intent, case_.raw_text);
-  const explanation = interp.why + " " + explain(intent, sources, case_.slots, case_.language);
+  const explanation = explain(intent, sources, case_.slots, case_.language);
   const path = buildPath(intent, case_.slots);
   const draft = interp.primary_action === "none" ? null : buildDraft(intent, case_.slots, case_.language);
   return {

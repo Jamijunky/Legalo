@@ -379,7 +379,7 @@ class Engine:
                 ready_for_pdf=False,
             )
 
-        explanation = interp.why + " " + explain_for(case.language, case.intent, sources, case.slots)
+        explanation = explain_for(case.language, case.intent, sources, case.slots)
         if case.language == "hi":
             explanation = explain_for("hi", case.intent, sources, case.slots)
         path = build_path(case.intent, case.slots, sources)
