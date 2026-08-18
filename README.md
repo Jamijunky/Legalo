@@ -85,6 +85,21 @@ npm run dev
 
 Open http://localhost:3000
 
+### Vercel (frontend)
+
+The Next.js app lives in `apps/web`. If the production URL shows **404 NOT_FOUND**, Vercel is building the repo root instead of that folder.
+
+In the Vercel project: **Settings → Build and Deployment**
+
+- Root Directory: `apps/web`
+- Framework Preset: Next.js
+- Output Directory: leave default / empty
+- Redeploy with **Clear cache**
+
+This repo also has a root `vercel.json` that builds `apps/web` even if Root Directory stays `.`.
+
+Vercel only hosts the UI. Set `NEXT_PUBLIC_API_URL` to a public FastAPI URL (see `render.yaml`) or the live form will call `http://localhost:8000`.
+
 ### Docker
 
 ```bash
