@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
-from string import Template
 
 from .config import settings
 from .schemas import DraftBody, Intent, PathStep, SourceRef
@@ -11,8 +9,10 @@ from .schemas import DraftBody, Intent, PathStep, SourceRef
 def _fill(template_id: str, fields: dict[str, str]) -> str:
     path = settings.data_dir / "templates" / f"{template_id}.html"
     src = path.read_text(encoding="utf-8")
-    # Use safe_substitute so missing keys remain visible.
-    return Template(src).safe_substitute(fields)
+    for key, value in fields.items():
+        src = src.replace("{{ " + key + " }}", str(value))
+        src = src.replace("{{" + key + "}}", str(value))
+    return src
 
 
 def _today() -> str:
@@ -95,6 +95,28 @@ def build_path(intent: Intent, slots: dict[str, str], sources: list[SourceRef]) 
             PathStep(
                 title="Send a written representation and keep proof",
                 detail="Use the draft reply. If supply stays cut, approach the local police for a cognizable safety issue and the competent Rent Authority / civil court as per State law. This tool does not file for you.",
+            ),
+        ]
+    if intent == "nhrc":
+        return [
+            PathStep(
+                title="Write a self-contained complaint — no invented offence sections",
+                detail="NHRC FAQ: complaints should be self-contained. State who, when, where, and what the officer did. Legalo will not insert BNS/IPC section numbers; those Acts are not in the dated corpus.",
+            ),
+            PathStep(
+                title="Lodge on HRCNet (NHRC or State Commission)",
+                detail="nhrc.nic.in Lodge & Track (last updated 07-Apr-2026) opens https://hrcnet.nic.in/HRCNet/public/webcomplaint.aspx. Select the State of incident, choose NHRC or SHRC, verify mobile OTP, upload a PDF if you have one, keep the Unique Diary Number.",
+                url="https://hrcnet.nic.in/HRCNet/public/webcomplaint.aspx",
+                verify="Confirm live fields on HRCNet. Snapshot retrieved 2026-08-19.",
+            ),
+            PathStep(
+                title="No fee; language",
+                detail="NHRC FAQ (retrieved 2026-08-19): Hindi, English or any Eighth Schedule language; no fee. Other listed channels include post, email and CSC — confirm the live email on nhrc.nic.in/faq.",
+                url="https://nhrc.nic.in/faq",
+            ),
+            PathStep(
+                title="Helpline published on HRCNet",
+                detail="HRCNet publishes NHRC toll-free 14433 for queries. This is not an emergency dispatch number. Legalo does not file.",
             ),
         ]
     return []
@@ -188,6 +210,33 @@ def build_draft(intent: Intent, slots: dict[str, str], language: str) -> DraftBo
         return DraftBody(
             template_id="tenant",
             title="Tenant representation (Model Tenancy Act 2021)",
+            language=language,
+            fields=fields,
+            html=html,
+            plain=_html_to_plain(html),
+        )
+    if intent == "nhrc":
+        fields = {
+            "commission": "National Human Rights Commission / the State Human Rights Commission of the incident State",
+            "date": today,
+            "complainant_name": slots.get("complainant_name") or slots.get("applicant_name", "[name]"),
+            "complainant_contact": slots.get("complainant_contact") or slots.get("applicant_contact", "[contact / address]"),
+            "state": slots.get("state", "[State / UT of incident]"),
+            "facts": slots.get("facts")
+            or slots.get("issue")
+            or "[Describe what the officer did, with date, place, and any witness or injury details.]",
+            "place_time": slots.get("place_time", "[place and date/time]"),
+            "officer_detail": slots.get("officer_detail", "[station / name / belt number if known; else unknown]"),
+            "relief": slots.get(
+                "relief",
+                "Inquire into the incident, record the officer’s identity, and recommend action and relief as the Commission finds fit.",
+            ),
+            "retrieved_on": "2026-08-19",
+        }
+        html = _fill("nhrc", fields)
+        return DraftBody(
+            template_id="nhrc",
+            title="Human rights complaint draft (HRCNet)",
             language=language,
             fields=fields,
             html=html,

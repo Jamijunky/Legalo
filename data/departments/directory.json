@@ -63,6 +63,18 @@
       "retrieved_on": "2026-08-18"
     },
     {
+      "id": "nhrc",
+      "problem_types": ["police_assault", "police_misconduct", "human_rights"],
+      "label_en": "National Human Rights Commission / State Human Rights Commission (HRCNet)",
+      "label_hi": "राष्ट्रीय / राज्य मानवाधिकार आयोग (HRCNet)",
+      "level": "union",
+      "file_online": "https://hrcnet.nic.in/HRCNet/public/webcomplaint.aspx",
+      "file_online_note": "Lodge on HRCNet. Choose NHRC or the State Commission. This is not an RTI and not e-Jagriti.",
+      "source_url": "https://nhrc.nic.in/lodge-&-track-complaints",
+      "source_title": "NHRC Lodge & Track Complaints",
+      "retrieved_on": "2026-08-19"
+    },
+    {
       "id": "central-generic",
       "problem_types": ["central_scheme", "passport", "epfo", "central_ministry"],
       "label_en": "Concerned Central Ministry / Department (file on RTI Online)",

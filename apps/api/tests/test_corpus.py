@@ -53,6 +53,21 @@ def test_shop_refund_is_not_an_rti():
     assert resp.interpretation and resp.interpretation.primary_action == "consumer_complaint"
 
 
+def test_police_slap_is_nhrc_not_unsupported():
+    resp = engine.create("a police officer slapped me.", "en", "en")
+    assert resp.intent == "nhrc"
+    assert resp.interpretation
+    assert resp.interpretation.situation_type == "police_assault"
+    assert resp.interpretation.primary_action == "nhrc_complaint"
+    blob = " ".join(
+        [resp.explanation or "", resp.interpretation.why, resp.interpretation.not_this, *(p.detail for p in resp.path)]
+    ).lower()
+    assert "hrcnet" in blob
+    assert "not an rti" in resp.interpretation.not_this.lower() or "not an rti" in blob
+    assert resp.draft
+    assert "323" not in (resp.explanation or "")
+
+
 def test_hindi_rti_explanation_without_llm():
     resp = engine.create(
         "प्रयागराज में मेरा राशन कार्ड का आवेदन चार महीने से लंबित है।",

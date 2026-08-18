@@ -18,8 +18,8 @@ from .config import settings
 from .llm import generate_json
 from .schemas import Intent, SlotQuestion
 
-Domain = Literal["welfare_records", "consumer", "tenancy", "unsupported"]
-Action = Literal["rti", "rti_for_criteria", "consumer_complaint", "tenant_representation", "none"]
+Domain = Literal["welfare_records", "consumer", "tenancy", "police_accountability", "unsupported"]
+Action = Literal["rti", "rti_for_criteria", "consumer_complaint", "tenant_representation", "nhrc_complaint", "none"]
 Level = Literal["union", "state", "unknown"]
 
 PENDING_KINDS = ("pending_application", "disbursement_failed", "verification_gap", "eligibility_question")
@@ -123,14 +123,39 @@ def _pending_kind_from_text(blob: str) -> str | None:
     return None
 
 
+def _is_police_assault(blob: str) -> bool:
+    actor = _has(blob, "police", "constable", "inspector", "थाना", "पुलिस")
+    actor = actor or (_has(blob, "officer") and _has(blob, "police", "पुलिस"))
+    harm = _has(
+        blob,
+        "slap",
+        "slapped",
+        "beat",
+        "beaten",
+        "hit me",
+        "thrash",
+        "torture",
+        "lathi",
+        "punched",
+        "custody",
+        "थप्पड़",
+        "पीटा",
+        "मारपीट",
+        "मारा",
+    )
+    return actor and harm
+
+
 def _domain_from_blob(blob: str) -> Domain:
+    if _is_police_assault(blob):
+        return "police_accountability"
     if _has(blob, "landlord", "tenant", "evict", "vacate", "मकान मालिक", "किरायेदार", "खाली कर"):
         return "tenancy"
     if _has(blob, "refund", "defective", "shop", "warranty", "smartphone", "वापसी", "खराब", "दुकान"):
         return "consumer"
     if detect_benefit(blob) or _has(blob, "rti", "application has been pending", "public authority", "ration", "scholarship"):
         return "welfare_records"
-    if _has(blob, "surgery", "hack", "bomb", "kill"):
+    if _has(blob, "surgery", "hack", "bomb"):
         return "unsupported"
     return "unsupported"
 
@@ -141,10 +166,12 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
 
     llm = generate_json(
         "You interpret Indian civic situations. Do not give eligibility opinions. "
-        "Choose domain: welfare_records | consumer | tenancy | unsupported. "
+        "Choose domain: welfare_records | consumer | tenancy | police_accountability | unsupported. "
         "Choose situation_type: pending_application | disbursement_failed | verification_gap | "
         "eligibility_question | explicit_information_request | defect_refund_refused | "
-        "essential_supply_cut | informal_eviction | unsupported. "
+        "essential_supply_cut | informal_eviction | police_assault | unsupported. "
+        "police_accountability = alleged assault or illegal force by a police officer. "
+        "unsupported = medical how-to or unrelated. Do not treat police assault as unsupported."
         "JSON keys: domain, situation_type, benefit, government_level, evidence (array of short quotes).",
         blob[:4000],
     )
@@ -156,12 +183,22 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         level = slots["scheme_level"]  # type: ignore[assignment]
     source = "rules"
 
-    if llm and llm.get("domain") in {"welfare_records", "consumer", "tenancy", "unsupported"}:
+    if llm and llm.get("domain") in {
+        "welfare_records",
+        "consumer",
+        "tenancy",
+        "police_accountability",
+        "unsupported",
+    }:
         domain = llm["domain"]
         source = "llm+rules"
         benefit = llm.get("benefit") or benefit
         if llm.get("government_level") in {"union", "state", "unknown"}:
             level = llm["government_level"]
+
+    if _is_police_assault(blob):
+        domain = "police_accountability"
+        source = "rules" if source == "rules" else "llm+rules"
 
     situation = slots.get("pending_kind") or _pending_kind_from_text(blob)
     if llm and llm.get("situation_type") in TABLE["pathways"] and not slots.get("pending_kind"):
@@ -220,6 +257,10 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         if benefit == "ration":
             level = "state"
             needs_level = False
+    elif domain == "police_accountability":
+        situation = "police_assault"
+        level = "union"
+        evidence.append("alleged police use of force — human-rights complaint, not RTI")
     else:
         situation = "unsupported"
 
@@ -241,7 +282,9 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         )
 
     dept = None
-    if benefit and benefit in TABLE["benefits"]:
+    if domain == "police_accountability":
+        dept = "nhrc"
+    elif benefit and benefit in TABLE["benefits"]:
         bmeta = TABLE["benefits"][benefit]
         if level == "union":
             dept = bmeta.get("department_union")
@@ -253,6 +296,8 @@ def interpret(text: str, slots: dict[str, str] | None = None, notice: str = "") 
         conf = 0.82
     if situation == "explicit_information_request":
         conf = 0.9
+    if situation == "police_assault":
+        conf = 0.88
 
     why = pathway.get("why_en", "")
     if benefit == "scholarship" and level == "unknown":
@@ -284,6 +329,8 @@ def intent_of(interp: Interpretation) -> Intent:
         return "consumer"
     if interp.domain == "tenancy":
         return "tenant"
+    if interp.domain == "police_accountability":
+        return "nhrc"
     if interp.domain == "unsupported" or interp.primary_action == "none":
         return "unsupported"
     return "rti"

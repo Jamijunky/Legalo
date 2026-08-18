@@ -61,7 +61,7 @@ export type DraftBody = {
 export type CaseResponse = {
   case_id: string;
   step: string;
-  intent: "rti" | "consumer" | "tenant" | "unsupported" | null;
+  intent: "rti" | "consumer" | "tenant" | "nhrc" | "unsupported" | null;
   language: string;
   ui_locale: string;
   restatement?: string | null;

@@ -89,6 +89,15 @@
       "why_hi": "दो दिन का खाली करने का पत्र बेदखली का आदेश नहीं है (मॉडल धारा 21, जहाँ लागू)।",
       "not_en": "Not a welfare RTI unless records of a public housing authority are needed.",
       "corpus": "tenant"
+    },
+    "police_assault": {
+      "domain": "police_accountability",
+      "primary_action": "nhrc_complaint",
+      "secondary_action": "hrcnet_or_shrc",
+      "why_en": "This is alleged use of force by a police officer — a human-rights complaint, not a records request and not a shop dispute. The dated corpus has NHRC/HRCNet filing rules, not Bharatiya Nyaya Sanhita or IPC offence sections, so Legalo will not invent those section numbers. Route to a self-contained complaint on HRCNet (NHRC or the State Commission).",
+      "why_hi": "यह पुलिस अधिकारी द्वारा बल प्रयोग का आरोप है — मानवाधिकार शिकायत, आरटीआई या दुकान विवाद नहीं। कॉर्पस में NHRC/HRCNet की प्रक्रिया है, BNS/IPC की धाराएँ नहीं; वे गढ़ेंगे नहीं।",
+      "not_en": "Not an RTI. Not a consumer complaint. Not a tenancy draft. Not an unsourced FIR template with invented BNS/IPC sections.",
+      "corpus": "nhrc"
     }
   }
 }

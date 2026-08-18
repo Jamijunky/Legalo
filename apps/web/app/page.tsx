@@ -14,6 +14,7 @@ import { GENERATION_LANGUAGES, copy, type UiLocale } from "@/lib/i18n";
 
 const DEMOS = {
   scholarship: "My scholarship has been pending for four months.",
+  police: "a police officer slapped me.",
   rti: "My ration card application has been pending for four months in Prayagraj. I want the current status and certified copies of file notings and reasons for delay.",
   rtiHi:
     "प्रयागराज में मेरा राशन कार्ड का आवेदन चार महीने से लंबित है। मुझे वर्तमान स्थिति और फ़ाइल नोटिंग की प्रमाणित प्रतियाँ चाहिए।",
@@ -153,6 +154,10 @@ export default function HomePage() {
               <button className="demo" onClick={() => start(DEMOS.scholarship)}>
                 <strong>{t.demoRti}</strong>
                 <span className="note">Should ask what “pending” means — then NSP vs State</span>
+              </button>
+              <button className="demo" onClick={() => start(DEMOS.police)}>
+                <strong>{t.demoPolice}</strong>
+                <span className="note">Not an RTI — HRCNet, no invented BNS/IPC sections</span>
               </button>
               <button className="demo" onClick={() => start(DEMOS.rti)}>
                 <strong>{t.demoRation}</strong>

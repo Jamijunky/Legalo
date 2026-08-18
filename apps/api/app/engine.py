@@ -23,6 +23,7 @@ DOC_FILTER: dict[Intent, set[str]] = {
     "rti": {"rti-act-2005", "rti-rules-2012", "rti-faq-dopt-2012", "rti-online-portal"},
     "consumer": {"cpa-2019", "cpa-jurisdiction-rules-2021", "e-jagriti-portal"},
     "tenant": {"model-tenancy-act-2021"},
+    "nhrc": {"nhrc-hrcnet-portal", "nhrc-faq-complaints"},
     "unsupported": set(),
 }
 
@@ -99,6 +100,28 @@ def _explain(intent: Intent, sources: list[SourceRef], slots: dict[str, str]) ->
             "Model s.21: eviction is an order of the Rent Court on listed grounds after notice — not a two-day "
             "informal letter. A notice to vacate in 48 hours, by itself, is not an eviction order under this model."
         )
+    elif intent == "nhrc":
+        bits.append(
+            "This is not an RTI and not a consumer complaint. A complaint that a police officer used force against you "
+            "is a human-rights complaint. The National Human Rights Commission (established under the Protection of "
+            "Human Rights Act, 1993) publishes Lodge & Track Complaints on nhrc.nic.in (page last updated 07-Apr-2026)."
+        )
+        bits.append(
+            "File on HRCNet (https://hrcnet.nic.in/HRCNet/public/webcomplaint.aspx): pick the State of the incident, "
+            "choose NHRC or the State Human Rights Commission, verify your mobile number with OTP, and keep the Unique "
+            "Diary Number. HRCNet publishes NHRC toll-free 14433. Legalo does not file for you."
+        )
+        bits.append(
+            "NHRC FAQ (retrieved 19 August 2026): complaints may be in Hindi, English or any Eighth Schedule language; "
+            "they should be self-contained; no fee is charged. Other listed channels include post, email and Common "
+            "Service Centres — confirm the live address on nhrc.nic.in/faq."
+        )
+        bits.append(
+            "Legalo’s dated corpus does not include the Bharatiya Nyaya Sanhita, 2023 or the Indian Penal Code. "
+            "It will not invent offence section numbers for a slap or assault. A station complaint or FIR, if you choose "
+            "that path, must follow the live criminal-procedure law — verify on the official India Code / local police "
+            "instructions; this tool will not draft unsourced charge language."
+        )
     dated = "; ".join(f"{s.title} s.{s.section} (published {s.published_on})" for s in sources[:5])
     bits.append(f"Sources used: {dated}.")
     bits.append("This is not legal advice. Review every draft. Legalo does not file on government portals.")
@@ -157,6 +180,20 @@ def _explain_hi(intent: Intent, sources: list[SourceRef], slots: dict[str, str])
         )
         bits.append(
             "मॉडल धारा 21: बेदखली Rent Court के आदेश से, सूचीबद्ध आधारों पर होती है — दो दिन के अनौपचारिक पत्र से नहीं।"
+        )
+    elif intent == "nhrc":
+        bits.append(
+            "यह आरटीआई नहीं है और उपभोक्ता शिकायत भी नहीं है। पुलिस अधिकारी द्वारा बल प्रयोग का आरोप मानवाधिकार शिकायत है। "
+            "राष्ट्रीय मानवाधिकार आयोग (Protection of Human Rights Act, 1993) nhrc.nic.in पर Lodge & Track Complaints प्रकाशित करता है "
+            "(पृष्ठ last updated 07-Apr-2026)।"
+        )
+        bits.append(
+            "HRCNet पर दाखिल करें (https://hrcnet.nic.in/HRCNet/public/webcomplaint.aspx): घटना का राज्य चुनें, NHRC या राज्य आयोग चुनें, "
+            "मोबाइल OTP से सत्यापित करें, Unique Diary Number संभाल कर रखें। HRCNet पर टोल-फ्री 14433 प्रकाशित है। लीगैलो दाखिल नहीं करता।"
+        )
+        bits.append(
+            "NHRC FAQ (प्राप्ति 19 August 2026): शिकायत हिन्दी, अंग्रेज़ी या आठवीं अनुसूची की भाषा में हो सकती है; स्वयंपूर्ण हो; शुल्क नहीं। "
+            "BNS/IPC की धाराएँ इस कॉर्पस में नहीं हैं — लीगैलो वे गढ़ेगा नहीं।"
         )
     dated = "; ".join(f"{s.title} s.{s.section} (published {s.published_on})" for s in sources[:5])
     bits.append(f"प्रयुक्त स्रोत: {dated}।")
@@ -253,6 +290,8 @@ class Engine:
     def _retrieve(self, intent: Intent, query: str) -> list[SourceRef]:
         allow = DOC_FILTER.get(intent) or None
         hits = self.index.search(query, k=settings.retrieve_k, doc_ids=allow)
+        if not hits and allow:
+            hits = [(c, 1.0) for c in self.chunks if c.doc_id in allow][: settings.retrieve_k]
         return [to_source_ref(c, settings.procedural_stale_days) for c, _ in hits]
 
     def _respond(self, case: Case) -> CaseResponse:

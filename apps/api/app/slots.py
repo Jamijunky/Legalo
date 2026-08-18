@@ -63,6 +63,7 @@ SLOTS: dict[Intent, list[SlotSpec]] = {
     "rti": RTI_SLOTS,
     "consumer": CONSUMER_SLOTS,
     "tenant": TENANT_SLOTS,
+    "nhrc": [],
     "unsupported": [],
 }
 
@@ -97,6 +98,10 @@ def extract_from_text(intent: Intent, text: str) -> dict[str, str]:
             )
         if re.search(r"shop", text, re.I):
             found.setdefault("opposite_party", "The retail shop that sold the goods (name to be completed)")
+    if intent == "nhrc":
+        found.setdefault("facts", text.strip()[:800])
+        if re.search(r"slap", text, re.I):
+            found.setdefault("issue", "Alleged slap / use of force by a police officer.")
     if intent == "tenant":
         if re.search(r"electric", text, re.I):
             found.setdefault("issue", "Landlord withheld electricity / essential supply and demanded vacation of the premises.")

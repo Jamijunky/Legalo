@@ -57,15 +57,16 @@ def _score(text: str, hints: tuple[str, ...]) -> int:
 def classify(text: str, extracted_notice: str = "") -> tuple[Intent, str]:
     blob = f"{text}\n{extracted_notice}"
     payload = generate_json(
-        "You classify Indian civic problems into rti, consumer, tenant, or unsupported. "
+        "You classify Indian civic problems into rti, consumer, tenant, nhrc, or unsupported. "
         "rti = citizen needs records/status from a public authority. "
         "consumer = defect/deficiency/refund against a seller. "
         "tenant = landlord/tenant housing dispute. "
+        "nhrc = alleged assault or illegal force by a police officer — human rights complaint, not RTI. "
         "unsupported = medical advice, crime how-to, or unrelated. "
         'JSON: {"intent": "...", "reason": "..."}',
         blob[:4000],
     )
-    if payload and payload.get("intent") in {"rti", "consumer", "tenant", "unsupported"}:
+    if payload and payload.get("intent") in {"rti", "consumer", "tenant", "nhrc", "unsupported"}:
         return payload["intent"], "llm"
 
     scores = {

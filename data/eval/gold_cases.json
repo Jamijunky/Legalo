@@ -66,6 +66,15 @@
     "must_cite_sections_any": ["20", "21"],
     "must_mention": ["state law may differ"]
   },
+    {
+    "id": "gold-police-slap",
+    "query": "a police officer slapped me.",
+    "expect_intent": "nhrc",
+    "expect_situation_type": "police_assault",
+    "expect_primary_action": "nhrc_complaint",
+    "must_cite_doc_ids": ["nhrc-hrcnet-portal"],
+    "must_mention": ["hrcnet", "not an RTI"]
+  },
   {
     "id": "gold-unknown-medical",
     "query": "How do I perform heart surgery at home?",
